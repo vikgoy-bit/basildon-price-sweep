@@ -344,16 +344,13 @@
     }
   ],
   "warnings": [
-    "Storage King: size 0 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 1 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 2 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 3 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 4 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 5 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 6 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 7 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 8 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Storage King: size 9 click failed: TimeoutError: locator.click: Timeout 5000ms exceeded.",
-    "Make Space: could not select Wickford store — see debug/makespace-quote-step1.txt"
+    "Storage King: size \"10 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"25 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"35 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"50 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"75 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"100 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"150 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
+    "Storage King: size \"200 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded."
   ]
 }

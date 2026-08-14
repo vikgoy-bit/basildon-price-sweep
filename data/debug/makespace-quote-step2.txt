@@ -1,4 +1,4 @@
-020 8806 3155
+020 3084 8686
 Get a Price
 Personal Storage 
 Business Storage 
@@ -8,48 +8,37 @@ About Us
 Select your room size
 Storage details
 View your quote, & reserve
-Room Shown is:
+Title*
+Please select a title
+Mr
+Ms
+Mrs
+Miss
+Dr
+First Name*
+Surname*
+Telephone*
+Email*
+PostCode*
+Preferred select your preferred store*
+Please select a store
+Billericay, Essex
+Clapton, London
+Horsham, West Sussex
+How long might you need storage?*
+Please select a timeframe
+1 Week
+4 Weeks
+8 Weeks
+3 Months
+6 Months
+12 Months
+Just a rough estimate will do, you can stay as little or as long as you need.
 
-25 sq ft
+Note: We will not share your details with any third party. You can read our Privacy Policy Here.
 
-Example room dimension:
-
-
-5ft (w) 5ft (d) 8ft (h)
-
-Contents of Transit Van
-Contents of a bedsit
-Size of regular garden shed.
-
-Get a Quote For This Room
-‹
-10 sq ft
-Standard Room
-16 sq ft
-Standard Room
-25 sq ft
-Standard Room
-35 sq ft
-Standard Room
-50 sq ft
-Standard Room
-75 sq ft
-Standard Room
-100 sq ft
-Standard Room
-125 sq ft
-Standard Room
-150 sq ft
-Room
-175 sq ft
-Standard Room
-200 sq ft
-Standard Room
-250 sq ft
-Standard Room
-20 sq ft
-Standard Room
-›
+Back to Room Size
+Get Your Quote
 Quick Links
 Storage Location Billericay
 Storage Location Horsham
@@ -68,3 +57,4 @@ Testimonials
 Blog
 Contact Us
 © All Rights Reserved - MS Self Storage Ltd 2026 Terms | Privacy policy | Cookies | Sitemap | Protecting your goods
+< ! - Track a specific Crazy Egg snapshot by name - >
