@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-${{ github.run_number }}
-          path: debug/
+          path: data/debug/
           retention-days: 14
 
       - name: Commit results
