@@ -513,13 +513,14 @@
   ],
   "warnings": [
     "Shurgard: API returned 14 units (full ladder).",
-    "Storage King: size \"10 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"25 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"35 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"50 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"75 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"100 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"150 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded.",
-    "Storage King: size \"200 sq.ft\" failed: TimeoutError: locator.scrollIntoViewIfNeeded: Timeout 4000ms exceeded."
+    "Storage King: no label.radio matching \"10 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"25 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"35 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"50 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"75 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"100 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"150 sq.ft\" (page has 0 radio labels).",
+    "Storage King: no label.radio matching \"200 sq.ft\" (page has 0 radio labels).",
+    "Make Space: no way forward at quote step 2 and no prices found — see debug dumps."
   ]
 }
