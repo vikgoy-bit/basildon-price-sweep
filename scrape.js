@@ -200,31 +200,24 @@ async function storageKing(ctx) {
       .map(e => `${e.tagName}.${(e.className || '').toString().slice(0, 60)}: ${((e.innerText || e.value || '')).replace(/\s+/g, ' ').trim().slice(0, 90)}`)
       .filter(t => t.length > 8).join('\n')));
 
-  // Find clickable size options: prefer explicit Continue buttons, fall back to
-  // clickable elements mentioning sq ft (their markup may not use "Continue").
-  const CONTINUE = 'button:has-text("Continue"), a:has-text("Continue")';
-  let sel = CONTINUE;
-  let count = await page.locator(sel).count();
-  if (count === 0) {
-    sel = 'a:has-text("sq.ft"), button:has-text("sq.ft"), [role="button"]:has-text("sq.ft"), a:has-text("sq ft"), button:has-text("sq ft")';
-    count = await page.locator(sel).count();
-    if (count === 0) {
-      OUT.warnings.push('Storage King: no Continue buttons or clickable sq-ft options found — see data/debug/storageking-step1.txt and storageking-clickables.txt');
-    } else {
-      OUT.warnings.push(`Storage King: using ${count} sq-ft clickable fallback targets (no Continue buttons).`);
-    }
-  }
-  // Cap iterations: every size means a full page reload; 30 sizes blew the 20-min workflow budget.
-  const maxSteps = Math.min(count, 10);
-  for (let i = 0; i < maxSteps; i++) {
+  // Confirmed structure (2026-08-14 debug): sizes are radio LABELs
+  // ("label.radio" with text like "25 sq.ft") in a flickity carousel, plus a
+  // single Continue button that only works once a size radio is selected.
+  const SK_SIZES = ['10 sq.ft', '25 sq.ft', '35 sq.ft', '50 sq.ft', '75 sq.ft', '100 sq.ft', '150 sq.ft', '200 sq.ft'];
+  for (let i = 0; i < SK_SIZES.length; i++) {
+    const label = SK_SIZES[i];
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await acceptCookies(page);
       await settle(page, { quick: true });
-      const btn = page.locator(sel).nth(i);
-      // capture the size label from the nearest card
-      let label = '';
-      try { label = await btn.evaluate(b => (b.closest('div,li,article') || b).innerText.replace(/\s+/g, ' ').slice(0, 120)); } catch (e) {}
-      await btn.click({ timeout: 5000 });
+      // exact-match the size label so "25 sq.ft" can't hit "125 sq.ft"/"250 sq.ft"
+      const sizeRadio = page.locator('label.radio').filter({ hasText: new RegExp('^\\s*' + label.replace('.', '\\.') + '\\s*$') }).first();
+      await sizeRadio.scrollIntoViewIfNeeded({ timeout: 4000 });
+      await sizeRadio.click({ timeout: 5000 });
+      await page.waitForTimeout(500);
+      const cont = page.locator('button:has-text("Continue"), a:has-text("Continue")').first();
+      await cont.scrollIntoViewIfNeeded({ timeout: 4000 }).catch(() => {});
+      await cont.click({ timeout: 8000 });
       await settle(page, { quick: true });
       const text = await page.evaluate(() => document.body.innerText);
       if (i < 3) dump(`storageking-step2-${i}`, text);
@@ -256,7 +249,7 @@ async function storageKing(ctx) {
         OUT.warnings.push(`Storage King: size ${i} ("${label}") — no price found${asksDetails ? ' even after test-identity form fill' : ''}; see debug dumps.`);
       }
     } catch (e) {
-      OUT.warnings.push(`Storage King: size ${i} click failed: ${String(e).split('\n')[0]}`);
+      OUT.warnings.push(`Storage King: size "${label}" failed: ${String(e).split('\n')[0]}`);
     }
   }
   await page.close();
@@ -298,28 +291,41 @@ async function makeSpace(ctx) {
       .map(e => `${e.tagName}.${(e.className || '').toString().slice(0, 60)}: ${((e.innerText || e.value || e.placeholder || '')).replace(/\s+/g, ' ').trim().slice(0, 90)}`)
       .filter(t => t.length > 8).join('\n')));
 
-  // Select the Wickford store if a store picker is present (dropdown or clickable option).
-  try {
-    const select = page.locator('select').first();
-    if (await select.count()) {
-      await select.selectOption({ label: /wickford/i }).catch(async () => {
+  // Confirmed (2026-08-14 debug): their quote flow has NO Wickford store — the
+  // "Wickford" landing page is an SEO page served by the BILLERICAY facility
+  // (stores: Billericay, Horsham, Clapton Hackney). Select Billericay wherever
+  // a store choice appears, and record the competitor as Make Space (Billericay).
+  async function chooseBillericay() {
+    try {
+      const select = page.locator('select').first();
+      if (await select.count()) {
         const opts = await select.locator('option').allTextContents();
-        const idx = opts.findIndex(o => /wickford/i.test(o));
-        if (idx >= 0) await select.selectOption({ index: idx });
-      });
-    } else {
-      await page.locator('a:has-text("Wickford"), button:has-text("Wickford"), label:has-text("Wickford"), [role="option"]:has-text("Wickford")').first().click({ timeout: 4000 });
-    }
-    await settle(page);
-  } catch (e) {
-    OUT.warnings.push('Make Space: could not select Wickford store — see debug/makespace-quote-step1.txt');
+        const idx = opts.findIndex(o => /billericay/i.test(o));
+        if (idx >= 0) { await select.selectOption({ index: idx }); return true; }
+      }
+      await page.locator('a:has-text("Billericay"), button:has-text("Billericay"), label:has-text("Billericay"), [role="option"]:has-text("Billericay")').first().click({ timeout: 3000 });
+      return true;
+    } catch (e) { return false; }
   }
+  // The size carousel shows one room at a time with a "Get a Quote For This Room"
+  // button; clicking a size name switches the shown room.
+  try {
+    const size = page.getByText(/^\s*50 sq ft\s*$/).first();
+    await size.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
+    await size.click({ timeout: 4000 });
+    await page.waitForTimeout(600);
+  } catch (e) { OUT.warnings.push('Make Space: could not switch carousel to 50 sq ft — proceeding with default room.'); }
+  try {
+    await page.locator('a:has-text("Get a Quote For This Room"), button:has-text("Get a Quote For This Room")').first().click({ timeout: 5000 });
+    await settle(page);
+  } catch (e) { OUT.warnings.push('Make Space: "Get a Quote For This Room" button not clickable — see debug dumps.'); }
 
-  // Walk up to 4 steps: click through, filling the marked test identity if a contact form gates prices.
+  // Walk up to 5 steps: choose Billericay, fill the marked test identity if asked, advance.
   const priceRe = /£\s*\d+(?:\.\d{1,2})?\s*(?:\/|per\s*)?\s*(?:week|wk|month|mo)/gi;
-  for (let step = 0; step < 4; step++) {
+  for (let step = 0; step < 5; step++) {
     const text = await page.evaluate(() => document.body.innerText);
     dump(`makespace-quote-step${step + 2}`, text);
+    await chooseBillericay();
     const priceMatch = text.replace(/\s+/g, ' ').match(priceRe);
     if (priceMatch && priceMatch.length) {
       const cards = await extractPriceCards(page);
@@ -327,7 +333,7 @@ async function makeSpace(ctx) {
       for (const c of cards) {
         if (!c.prices.length) continue;
         OUT.observations.push({
-          competitor: 'Make Space Wickford', metric: 'quote_after_test_form', size_sqft: c.size_sqft,
+          competitor: 'Make Space (Billericay)', metric: 'quote_after_test_form', size_sqft: c.size_sqft,
           rack_rate: c.prices.length > 1 ? Math.max(...c.prices) : null,
           offer_rate: Math.min(...c.prices), per: c.per || 'week', promo: c.promo,
           source: page.url(), raw: c.text,
@@ -335,7 +341,7 @@ async function makeSpace(ctx) {
         n++;
       }
       if (n === 0) OUT.observations.push({
-        competitor: 'Make Space Wickford', metric: 'quote_after_test_form', size_sqft: null,
+        competitor: 'Make Space (Billericay)', metric: 'quote_after_test_form', size_sqft: null,
         rack_rate: null, offer_rate: null, per: '', promo: '',
         source: page.url(), raw: (priceMatch || []).join(' | '),
       });
