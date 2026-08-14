@@ -169,6 +169,32 @@ async function shurgard(ctx) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await acceptCookies(page);
   await settle(page, { scroll: true });
+
+  // PRIMARY: their own units API (discovered 2026-08-14, robots-permitted) —
+  // returns every unit; the page only renders "best deal" cards by default.
+  try {
+    const resp = await page.request.get('https://www.shurgard.com/en-gb/api/stores/73/units?searchTerm=null');
+    const apiData = await resp.json();
+    const units = ((apiData.stores || [])[0] || {}).units || [];
+    for (const u of units) {
+      const promoType = (u.promotion || {}).promotionType || '';
+      OUT.observations.push({
+        competitor: 'Shurgard Basildon', metric: 'unit',
+        size_sqft: parseFloat(u.sizeDefault) || null,
+        rack_rate: null,
+        offer_rate: (u.pricing || {}).priceRaw ?? null,
+        welcome_rate: (u.pricing || {}).welcomePriceRaw ?? null,
+        per: 'week',
+        promo: promoType === 'FirstMonth' ? '£1 first month' : promoType === 'FiftyPercentOff' ? '50% off first month' : promoType,
+        source: 'https://www.shurgard.com/en-gb/api/stores/73/units',
+        raw: `${u.isLocker ? 'Locker ' : ''}${u.sizeDefault} sq ft id=${u.id}`,
+      });
+    }
+    if (units.length) OUT.warnings.push(`Shurgard: API returned ${units.length} units (full ladder).`);
+  } catch (e) {
+    OUT.warnings.push(`Shurgard units API failed (${String(e).split('\n')[0]}) — falling back to page cards.`);
+  }
+
   const cards = await extractPriceCards(page);
   dump('shurgard-page', await page.evaluate(() => document.body.innerText));
   fs.writeFileSync(path.join(dbgDir, 'shurgard-api.json'), JSON.stringify(api, null, 2));
