@@ -39,7 +39,7 @@ const TEST_IDENTITY = {
   lastName: 'Test',
   fullName: 'Test Test',
   phone: '01234567894',
-  email: process.env.SWEEP_EMAIL || 'vikgoy+test@gmail.com',
+  email: process.env.SWEEP_EMAIL || 'baas123123+test@gmail.com',
 };
 const FORM_FILL_ALLOWED_HOSTS = ['www.storageking.co.uk', 'www.bigtopselfstorage.com', 'www.makespaceselfstorage.co.uk'];
 
