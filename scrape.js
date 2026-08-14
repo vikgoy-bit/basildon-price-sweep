@@ -236,10 +236,16 @@ async function storageKing(ctx) {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await acceptCookies(page);
       await settle(page, { quick: true });
-      // exact-match the size label so "25 sq.ft" can't hit "125 sq.ft"/"250 sq.ft"
-      const sizeRadio = page.locator('label.radio').filter({ hasText: new RegExp('^\\s*' + label.replace('.', '\\.') + '\\s*$') }).first();
-      await sizeRadio.scrollIntoViewIfNeeded({ timeout: 4000 });
-      await sizeRadio.click({ timeout: 5000 });
+      // Anchor at start only: labels contain a nested "Select" text so an exact
+      // full match fails; start-anchoring still keeps "25 sq.ft" off "125 sq.ft".
+      const sizeRadio = page.locator('label.radio').filter({ hasText: new RegExp('^\\s*' + label.replace('.', '\\.')) }).first();
+      if ((await sizeRadio.count()) === 0) {
+        OUT.warnings.push(`Storage King: no label.radio matching "${label}" (page has ${await page.locator('label.radio').count()} radio labels).`);
+        continue;
+      }
+      await sizeRadio.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
+      try { await sizeRadio.click({ timeout: 4000 }); }
+      catch (e) { await sizeRadio.click({ timeout: 4000, force: true }); } // flickity carousel can obscure it
       await page.waitForTimeout(500);
       const cont = page.locator('button:has-text("Continue"), a:has-text("Continue")').first();
       await cont.scrollIntoViewIfNeeded({ timeout: 4000 }).catch(() => {});
@@ -321,15 +327,28 @@ async function makeSpace(ctx) {
   // "Wickford" landing page is an SEO page served by the BILLERICAY facility
   // (stores: Billericay, Horsham, Clapton Hackney). Select Billericay wherever
   // a store choice appears, and record the competitor as Make Space (Billericay).
-  async function chooseBillericay() {
+  // Their details form (confirmed 2026-08-14): required Title select, First/Surname,
+  // Telephone, Email, PostCode, preferred-store select (Billericay/Clapton/Horsham)
+  // and a duration select. Fill every select sensibly, store = Billericay.
+  async function fillMakespaceDetails() {
     try {
-      const select = page.locator('select').first();
-      if (await select.count()) {
-        const opts = await select.locator('option').allTextContents();
-        const idx = opts.findIndex(o => /billericay/i.test(o));
-        if (idx >= 0) { await select.selectOption({ index: idx }); return true; }
+      const selects = page.locator('select');
+      const n = await selects.count();
+      for (let s = 0; s < n; s++) {
+        const sel = selects.nth(s);
+        try {
+          const opts = await sel.locator('option').allTextContents();
+          const current = await sel.inputValue().catch(() => '');
+          const idxB = opts.findIndex(o => /billericay/i.test(o));
+          if (idxB >= 0) { await sel.selectOption({ index: idxB }); continue; }
+          const idxMr = opts.findIndex(o => /^\s*Mr\s*$/i.test(o));
+          if (idxMr >= 0) { await sel.selectOption({ index: idxMr }); continue; }
+          // any other required select (e.g. duration): pick the first real option
+          if (!current && opts.length > 1) await sel.selectOption({ index: 1 });
+        } catch (e) {}
       }
-      await page.locator('a:has-text("Billericay"), button:has-text("Billericay"), label:has-text("Billericay"), [role="option"]:has-text("Billericay")').first().click({ timeout: 3000 });
+      const pc = page.locator('input[name*="post" i], input[id*="post" i], input[placeholder*="post" i]').first();
+      if (await pc.count()) await pc.fill('SS14 3AB', { timeout: 2000 }).catch(() => {}); // Basildon-area test postcode
       return true;
     } catch (e) { return false; }
   }
@@ -351,7 +370,7 @@ async function makeSpace(ctx) {
   for (let step = 0; step < 5; step++) {
     const text = await page.evaluate(() => document.body.innerText);
     dump(`makespace-quote-step${step + 2}`, text);
-    await chooseBillericay();
+    await fillMakespaceDetails();
     const priceMatch = text.replace(/\s+/g, ' ').match(priceRe);
     if (priceMatch && priceMatch.length) {
       const cards = await extractPriceCards(page);
