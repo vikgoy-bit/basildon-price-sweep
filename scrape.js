@@ -20,6 +20,12 @@ const path = require('path');
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' }); // YYYY-MM-DD
 const OUT = { date: today, observations: [], warnings: [] };
 
+// A stray rejected promise (e.g. from a response listener) must degrade to a
+// warning, not crash the whole run with exit code 1.
+process.on('unhandledRejection', (e) => {
+  try { OUT.warnings.push('unhandledRejection: ' + String(e).split('\n')[0]); } catch (err) {}
+});
+
 /**
  * Clearly-marked mystery-shop test identity (standard industry practice —
  * the name flags the enquiry as a test so sales teams don't chase it).
