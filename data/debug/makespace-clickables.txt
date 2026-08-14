@@ -1,0 +1,115 @@
+BUTTON.cky-btn cky-btn-customize: Manage
+BUTTON.cky-btn cky-btn-accept: Accept All
+BUTTON.cky-btn-close: 
+BUTTON.cky-show-desc-btn: 
+BUTTON.cky-accordion-btn: 
+BUTTON.cky-accordion-btn: 
+BUTTON.cky-accordion-btn: 
+INPUT.: on
+BUTTON.cky-accordion-btn: 
+INPUT.: on
+BUTTON.cky-accordion-btn: 
+INPUT.: on
+BUTTON.cky-accordion-btn: 
+INPUT.: on
+BUTTON.cky-btn cky-btn-preferences: 
+BUTTON.cky-btn cky-btn-accept: 
+A.navbar-brand d-none d-md-flex: 
+A.navbar-brand d-flex d-md-none: 
+A.: 020 8806 3155
+A.btn: Get a Price
+BUTTON.navbar-toggler: 
+A.nav-link: Personal Storage
+A.dropdown-toggle dropdown-toggle-split mobile-dropdown-toggle: 
+A.dropdown-item: Storage for Moving House
+A.dropdown-item: Home Improvements
+A.dropdown-item: Storage for Collectibles
+A.dropdown-item: Storage for Decluttering
+A.nav-link: Business Storage
+A.dropdown-toggle dropdown-toggle-split mobile-dropdown-toggle: 
+A.dropdown-item: Drive Up Storage Units
+A.dropdown-item: Archive Storage
+A.dropdown-item: Warehouse Storage
+A.dropdown-item: Online Businesses
+A.nav-link: Boxes & Packing
+BUTTON.nav-link: Store Locations
+A.dropdown-toggle dropdown-toggle-split mobile-dropdown-toggle: 
+A.dropdown-item: Billericay
+A.dropdown-item: Clapton
+A.dropdown-item: Horsham
+A.nav-link: About Us
+A.dropdown-toggle dropdown-toggle-split mobile-dropdown-toggle: 
+A.dropdown-item: FAQs
+A.dropdown-item: Environment
+A.dropdown-item: Contact Us
+A.dropdown-item: Blog
+A.dropdown-item: Reviews
+A.dropdown-item: Van Hire
+A.nav-link dropdown-toggle: Personal Storage
+A.dropdown-item: Storage for Moving House
+A.dropdown-item: Home Improvements
+A.dropdown-item: Storage for Collectibles
+A.dropdown-item: Storage for Decluttering
+A.nav-link dropdown-toggle: Business Storage
+A.dropdown-item: Drive Up Storage Units
+A.dropdown-item: Archive Storage
+A.dropdown-item: Warehouse Storage
+A.dropdown-item: Online Businesses
+A.nav-link: Boxes & Packing
+BUTTON.nav-link dropdown-toggle: Store Locations
+A.dropdown-item: Billericay
+A.dropdown-item: Clapton
+A.dropdown-item: Horsham
+A.nav-link dropdown-toggle: About Us
+A.dropdown-item: FAQs
+A.dropdown-item: Environment
+A.dropdown-item: Contact Us
+A.dropdown-item: Blog
+A.dropdown-item: Reviews
+A.dropdown-item: Van Hire
+INPUT.: 0
+INPUT.: 0
+INPUT.: 0
+INPUT.: 1/1/0001 12:00:00 AM
+INPUT.: 0
+INPUT.: bc0ba0ef-a120-489f-b82c-fb2af449a5cb
+INPUT.: 1
+INPUT.: Personal
+INPUT.: 45cdf219-7d35-4c3f-bf5e-7c044ffc83cd
+INPUT.: 1/1/0001 12:00:00 AM
+BUTTON.btn quote-btn: Get a Quote For This Room
+INPUT.: CfDJ8HhyEzHbzS1Ei7JzzHR1es2BIPneMCF2s1DCSrloHFYunA6f5VAWbizxVSC1Hjp3Cuw4iz5TkEzVYesJZfx_6S
+INPUT.: CfDJ8HhyEzHbzS1Ei7JzzHR1es05-SDGAUHzFlKkSBrV8m59kU9EhLIIAoSPHQahSV_9TMu6Xp06f53VpyRecMdSj9
+BUTTON.slider-btn prev-btn: ‹
+BUTTON.slider-btn next-btn: ›
+INPUT.: 0
+INPUT.: 0
+INPUT.: 0
+INPUT.: 1/1/0001 12:00:00 AM
+INPUT.: 0
+INPUT.: bc0ba0ef-a120-489f-b82c-fb2af449a5cb
+INPUT.: 1
+INPUT.: Personal
+INPUT.: 45cdf219-7d35-4c3f-bf5e-7c044ffc83cd
+BUTTON.btn quote-btn: Get a Quote For This Room
+INPUT.: CfDJ8HhyEzHbzS1Ei7JzzHR1es2BIPneMCF2s1DCSrloHFYunA6f5VAWbizxVSC1Hjp3Cuw4iz5TkEzVYesJZfx_6S
+INPUT.: CfDJ8HhyEzHbzS1Ei7JzzHR1es1CBi_qLcAbHny1xoCV-7KiJ-Tjv8EpHmaJqEVTw3_d4KmZgnyFi34ZSOwkoiDSkx
+A.: Storage Location Billericay
+A.: Storage Location Horsham
+A.: Storage Location Clapton Hackney
+A.: Office Space Billericay
+A.: Horsham Office Space
+A.: Boxes Packing
+A.: Lowest Price Guarantee
+A.: Personal Storage
+A.: Get a Household Quote
+A.: Business Storage
+A.: Get a Business Quote
+A.: About Us
+A.: Testimonials
+A.: Contact Us
+A.: Terms
+A.: Privacy policy
+A.: Cookies
+A.: Sitemap
+A.: Protecting your goods
