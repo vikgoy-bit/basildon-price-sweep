@@ -59,20 +59,33 @@ async function acceptCookies(page) {
   }
 }
 
-async function settle(page) {
-  try { await page.waitForLoadState('networkidle', { timeout: 20000 }); } catch (e) {}
-  await page.waitForTimeout(2500);
-  // trigger lazy loading
+async function settle(page, opts = {}) {
+  const { scroll = false, quick = false } = opts;
+  try { await page.waitForLoadState('networkidle', { timeout: quick ? 6000 : 12000 }); } catch (e) {}
+  await page.waitForTimeout(quick ? 800 : 1500);
+  if (scroll) {
+    try {
+      await page.evaluate(async () => {
+        for (let y = 0; y <= document.body.scrollHeight; y += 800) {
+          window.scrollTo(0, y);
+          await new Promise(r => setTimeout(r, 80));
+        }
+        window.scrollTo(0, 0);
+      });
+    } catch (e) {}
+    await page.waitForTimeout(800);
+  }
+}
+
+/** Run a site function with a hard time budget so one hung site can't eat the workflow. */
+async function withBudget(name, ms, fn) {
+  let timer;
+  const timeout = new Promise((_, rej) => { timer = setTimeout(() => rej(new Error(`budget of ${ms / 1000}s exceeded`)), ms); });
   try {
-    await page.evaluate(async () => {
-      for (let y = 0; y <= document.body.scrollHeight; y += 600) {
-        window.scrollTo(0, y);
-        await new Promise(r => setTimeout(r, 120));
-      }
-      window.scrollTo(0, 0);
-    });
-  } catch (e) {}
-  await page.waitForTimeout(1500);
+    await Promise.race([fn(), timeout]);
+  } catch (e) {
+    OUT.warnings.push(`${name}: ${String(e.message || e).split('\n')[0]}`);
+  } finally { clearTimeout(timer); }
 }
 
 /** Fill a contact-details step with the marked test identity. Allowed hosts only. */
@@ -142,9 +155,9 @@ async function shurgard(ctx) {
     } catch (e) {}
   });
   const url = 'https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon';
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await acceptCookies(page);
-  await settle(page);
+  await settle(page, { scroll: true });
   const cards = await extractPriceCards(page);
   dump('shurgard-page', await page.evaluate(() => document.body.innerText));
   fs.writeFileSync(path.join(dbgDir, 'shurgard-api.json'), JSON.stringify(api, null, 2));
@@ -177,17 +190,19 @@ async function storageKing(ctx) {
   if (sizeButtons === 0) {
     OUT.warnings.push('Storage King: no Continue buttons found on select-a-size — flow may have changed; see debug/storageking-step1.txt');
   }
-  const maxSteps = Math.min(sizeButtons, 30);
+  // Cap iterations: every size means a full page reload; 30 sizes blew the 20-min workflow budget.
+  const maxSteps = Math.min(sizeButtons, 10);
+  if (sizeButtons > maxSteps) OUT.warnings.push(`Storage King: ${sizeButtons} size options found, sweeping first ${maxSteps} to stay inside the time budget.`);
   for (let i = 0; i < maxSteps; i++) {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await settle(page);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await settle(page, { quick: true });
       const btn = page.locator('button:has-text("Continue"), a:has-text("Continue")').nth(i);
       // capture the size label from the nearest card
       let label = '';
       try { label = await btn.evaluate(b => (b.closest('div,li,article') || b).innerText.replace(/\s+/g, ' ').slice(0, 120)); } catch (e) {}
       await btn.click({ timeout: 5000 });
-      await settle(page);
+      await settle(page, { quick: true });
       const text = await page.evaluate(() => document.body.innerText);
       if (i < 3) dump(`storageking-step2-${i}`, text);
       let text2 = text;
@@ -199,7 +214,7 @@ async function storageKing(ctx) {
         // Price gated behind contact details: fill the marked test identity and proceed.
         const didFill = await fillContactForm(page);
         if (didFill && await clickNext(page)) {
-          await settle(page);
+          await settle(page, { quick: true });
           text2 = await page.evaluate(() => document.body.innerText);
           if (i < 3) dump(`storageking-step3-${i}`, text2);
           priceMatch = text2.replace(/\s+/g, ' ').match(priceRe);
@@ -316,10 +331,16 @@ async function makeSpace(ctx) {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 BigTopPriceCheck/1.0',
     locale: 'en-GB', timezoneId: 'Europe/London',
   });
-  for (const fn of [shurgard, storageKing, makeSpace, bigTop]) {
-    try { await fn(ctx); } catch (e) { OUT.warnings.push(`${fn.name}: ${String(e).split('\n')[0]}`); }
-  }
-  await browser.close();
+  // Speed: skip images/fonts/media — we only need DOM text and JSON.
+  await ctx.route('**/*', route =>
+    ['image', 'font', 'media'].includes(route.request().resourceType()) ? route.abort() : route.continue());
+
+  // Hard per-site budgets so a hung site can never blow the workflow's 20-min limit.
+  await withBudget('Shurgard', 180000, () => shurgard(ctx));
+  await withBudget('Storage King', 420000, () => storageKing(ctx));
+  await withBudget('Make Space', 240000, () => makeSpace(ctx));
+  await withBudget('Big Top', 180000, () => bigTop(ctx));
+  await browser.close().catch(() => {});
 
   fs.writeFileSync(path.join(dataDir, 'latest.json'), JSON.stringify(OUT, null, 2));
   fs.writeFileSync(path.join(dataDir, `prices-${today}.json`), JSON.stringify(OUT, null, 2));
