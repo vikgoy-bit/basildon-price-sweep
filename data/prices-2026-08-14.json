@@ -1,0 +1,350 @@
+{
+  "date": "2026-08-14",
+  "observations": [
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 45.23,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£45.23/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 22.62,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£22.62/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 33.23,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£33.23/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 16.62,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£16.62/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 24,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£24.00/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 12.23,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£12.23/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 15.69,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£15.69/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 8.08,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£8.08/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 16.62,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£16.62/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 8.31,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "£8.31/week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 11.77,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "Storage units from £11.77 / week"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 7.15,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "Storage units from £7.15 / week"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 117,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£117/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 27,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£27/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 143,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£143/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 33,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£33/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 178,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£178/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 41.08,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£41.08/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 234,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£234/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 54,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£54/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 260,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£260/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 60,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£60/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 286,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£286/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 66.01,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£66.01/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 325,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£325/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 75.01,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£75.01/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 390,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£390/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 90.01,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£90.01/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 468,
+      "per": "mo",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£468/mo"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 108.01,
+      "per": "week",
+      "promo": "",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "£108.01/week inc VAT· billed monthly"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": null,
+      "rack_rate": null,
+      "offer_rate": 35,
+      "per": "month",
+      "promo": "STUDENTS Free moving box on us Student summer storage from £35/month - plus a free moving box when you book online",
+      "source": "https://www.bigtopselfstorage.com/pricing",
+      "raw": "STUDENTS Free moving box on us Student summer storage from £35/month - plus a free moving box when you book online. No padlock needed: every unit uses smart-entry, so your phone is the only key. See student deals"
+    }
+  ],
+  "warnings": [
+    "Storage King: no Continue buttons found on select-a-size — flow may have changed; see debug/storageking-step1.txt",
+    "Make Space: could not select Wickford store — see debug/makespace-quote-step1.txt"
+  ]
+}
