@@ -37,8 +37,8 @@ const TEST_IDENTITY = {
 };
 const FORM_FILL_ALLOWED_HOSTS = ['www.storageking.co.uk', 'www.bigtopselfstorage.com', 'www.makespaceselfstorage.co.uk'];
 
-const dbgDir = path.join(__dirname, 'debug');
 const dataDir = path.join(__dirname, 'data');
+const dbgDir = path.join(dataDir, 'debug'); // inside data/ so the workflow commits it
 fs.mkdirSync(dbgDir, { recursive: true });
 fs.mkdirSync(dataDir, { recursive: true });
 
@@ -131,13 +131,24 @@ async function extractPriceCards(page) {
     // keep innermost matching elements only
     const inner = hits.filter(el => !hits.some(o => o !== el && el.contains(o)));
     return inner.map(el => {
-      const t = (el.innerText || '').replace(/\s+/g, ' ').trim();
-      const prices = (t.match(/£\s*\d+(?:\.\d{1,2})?/g) || []).map(p => parseFloat(p.replace(/[£,\s]/g, '')));
-      const size = (t.match(sizeRe) || [])[1] || null;
+      let t = (el.innerText || '').replace(/\s+/g, ' ').trim();
+      // If the innermost price element lacks the unit size, climb to the card
+      // that contains both (sizes usually live in a sibling heading).
+      let cardText = t;
+      if (!sizeRe.test(t)) {
+        let p = el.parentElement;
+        for (let depth = 0; p && depth < 6; depth++, p = p.parentElement) {
+          const pt = (p.innerText || '').replace(/\s+/g, ' ').trim();
+          if (pt.length > 1200) break; // too broad — would span multiple cards
+          if (sizeRe.test(pt)) { cardText = pt; break; }
+        }
+      }
+      const prices = (t.match(/£\s*\d+(?:\.\d{1,2})?/g) || []).map(x => parseFloat(x.replace(/[£,\s]/g, '')));
+      const size = (cardText.match(sizeRe) || [])[1] || null;
       const per = (t.match(priceRe) || [])[1] || null;
-      const promo = /first month|% off|£1\b|free/i.test(t)
-        ? (t.match(/[^.]*?(?:first month|% off|£1\b|free)[^.]*/i) || [''])[0].trim() : '';
-      return { text: t, size_sqft: size ? parseFloat(size) : null, prices, per, promo };
+      const promo = /first month|% off|£1\b|free/i.test(cardText)
+        ? (cardText.match(/[^.]*?(?:first month|% off|£1\b|free)[^.]*/i) || [''])[0].trim() : '';
+      return { text: cardText.slice(0, 300), size_sqft: size ? parseFloat(size) : null, prices, per, promo };
     });
   });
 }
@@ -184,20 +195,32 @@ async function storageKing(ctx) {
   await acceptCookies(page);
   await settle(page);
   dump('storageking-step1', await page.evaluate(() => document.body.innerText));
+  dump('storageking-clickables', await page.evaluate(() =>
+    Array.from(document.querySelectorAll('a,button,[role="button"],input[type="submit"],label'))
+      .map(e => `${e.tagName}.${(e.className || '').toString().slice(0, 60)}: ${((e.innerText || e.value || '')).replace(/\s+/g, ' ').trim().slice(0, 90)}`)
+      .filter(t => t.length > 8).join('\n')));
 
-  // Find size cards and their Continue buttons; click through WITHOUT entering data.
-  const sizeButtons = await page.locator('button:has-text("Continue"), a:has-text("Continue")').count();
-  if (sizeButtons === 0) {
-    OUT.warnings.push('Storage King: no Continue buttons found on select-a-size — flow may have changed; see debug/storageking-step1.txt');
+  // Find clickable size options: prefer explicit Continue buttons, fall back to
+  // clickable elements mentioning sq ft (their markup may not use "Continue").
+  const CONTINUE = 'button:has-text("Continue"), a:has-text("Continue")';
+  let sel = CONTINUE;
+  let count = await page.locator(sel).count();
+  if (count === 0) {
+    sel = 'a:has-text("sq.ft"), button:has-text("sq.ft"), [role="button"]:has-text("sq.ft"), a:has-text("sq ft"), button:has-text("sq ft")';
+    count = await page.locator(sel).count();
+    if (count === 0) {
+      OUT.warnings.push('Storage King: no Continue buttons or clickable sq-ft options found — see data/debug/storageking-step1.txt and storageking-clickables.txt');
+    } else {
+      OUT.warnings.push(`Storage King: using ${count} sq-ft clickable fallback targets (no Continue buttons).`);
+    }
   }
   // Cap iterations: every size means a full page reload; 30 sizes blew the 20-min workflow budget.
-  const maxSteps = Math.min(sizeButtons, 10);
-  if (sizeButtons > maxSteps) OUT.warnings.push(`Storage King: ${sizeButtons} size options found, sweeping first ${maxSteps} to stay inside the time budget.`);
+  const maxSteps = Math.min(count, 10);
   for (let i = 0; i < maxSteps; i++) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await settle(page, { quick: true });
-      const btn = page.locator('button:has-text("Continue"), a:has-text("Continue")').nth(i);
+      const btn = page.locator(sel).nth(i);
       // capture the size label from the nearest card
       let label = '';
       try { label = await btn.evaluate(b => (b.closest('div,li,article') || b).innerText.replace(/\s+/g, ' ').slice(0, 120)); } catch (e) {}
@@ -270,6 +293,10 @@ async function makeSpace(ctx) {
   await acceptCookies(page);
   await settle(page);
   dump('makespace-quote-step1', await page.evaluate(() => document.body.innerText));
+  dump('makespace-clickables', await page.evaluate(() =>
+    Array.from(document.querySelectorAll('a,button,select,option,[role="button"],[role="option"],label,input'))
+      .map(e => `${e.tagName}.${(e.className || '').toString().slice(0, 60)}: ${((e.innerText || e.value || e.placeholder || '')).replace(/\s+/g, ' ').trim().slice(0, 90)}`)
+      .filter(t => t.length > 8).join('\n')));
 
   // Select the Wickford store if a store picker is present (dropdown or clickable option).
   try {
