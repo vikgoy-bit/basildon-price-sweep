@@ -44,16 +44,17 @@ const TEST_IDENTITY = {
 const FORM_FILL_ALLOWED_HOSTS = ['www.storageking.co.uk', 'www.bigtopselfstorage.com', 'www.makespaceselfstorage.co.uk'];
 
 /**
- * TESTING HOLDS (2026-08-15): Make Space and Big Top are captured and stable,
- * so they're paused while Storage King is being debugged — no point re-quoting
- * them on every test run. WHEN TESTING IS DONE: set every flag to true to
- * activate the full daily sweep.
+ * PRODUCTION CONFIG (2026-08-15).
+ * storageking is permanently OFF: Cloudflare blocks the quote-flow automation
+ * ("Sorry, you have been blocked", confirmed in step-2 dumps 15/08/2026).
+ * Do not re-enable or attempt to bypass — Storage King per-size prices come
+ * from the monthly manual check alongside Safestore.
  */
 const RUN = {
-  shurgard: true,     // stable (API) — cheap, leave on
-  storageking: true,  // under test
-  makespace: false,   // HOLD — complete, re-enable for production
-  bigtop: false,      // HOLD — complete, re-enable for production
+  shurgard: true,      // full 14-unit ladder via their API + store page
+  storageking: false,  // OFF — Cloudflare bot protection; manual monthly check
+  makespace: true,     // 13-size quote sweep via Billericay flow
+  bigtop: true,        // own-site benchmark ladder
 };
 
 const dataDir = path.join(__dirname, 'data');
