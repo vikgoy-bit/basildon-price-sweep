@@ -242,6 +242,9 @@ async function storageKing(ctx) {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await acceptCookies(page);
       await settle(page, { quick: true });
+      // The size radios render late (flickity carousel init) — the quick settle
+      // races them and finds 0. Wait for them explicitly before matching.
+      await page.waitForSelector('label.radio', { timeout: 15000 }).catch(() => {});
       // Anchor at start only: labels contain a nested "Select" text so an exact
       // full match fails; start-anchoring still keeps "25 sq.ft" off "125 sq.ft".
       const sizeRadio = page.locator('label.radio').filter({ hasText: new RegExp('^\\s*' + label.replace('.', '\\.')) }).first();
@@ -274,6 +277,11 @@ async function storageKing(ctx) {
           priceMatch = text2.replace(/\s+/g, ' ').match(priceRe);
           viaForm = true;
         }
+      }
+      // Order-independent fallback: some quote pages print "per week" before
+      // the £ figure, which the pattern above misses.
+      if ((!priceMatch || !priceMatch.length) && /week|month|\/wk|\/mo/i.test(text2)) {
+        priceMatch = text2.match(/£\s*\d+(?:\.\d{1,2})?/g);
       }
       if (priceMatch && priceMatch.length) {
         const prices = priceMatch.map(money).filter(Boolean);
@@ -358,53 +366,51 @@ async function makeSpace(ctx) {
       return true;
     } catch (e) { return false; }
   }
-  // The size carousel shows one room at a time with a "Get a Quote For This Room"
-  // button; clicking a size name switches the shown room.
-  try {
-    const size = page.getByText(/^\s*50 sq ft\s*$/).first();
-    await size.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
-    await size.click({ timeout: 4000 });
-    await page.waitForTimeout(600);
-  } catch (e) { OUT.warnings.push('Make Space: could not switch carousel to 50 sq ft — proceeding with default room.'); }
-  try {
-    await page.locator('a:has-text("Get a Quote For This Room"), button:has-text("Get a Quote For This Room")').first().click({ timeout: 5000 });
-    await settle(page);
-  } catch (e) { OUT.warnings.push('Make Space: "Get a Quote For This Room" button not clickable — see debug dumps.'); }
-
-  // Walk up to 5 steps: choose Billericay, fill the marked test identity if asked, advance.
-  const priceRe = /£\s*\d+(?:\.\d{1,2})?\s*(?:\/|per\s*)?\s*(?:week|wk|month|mo)/gi;
-  for (let step = 0; step < 5; step++) {
-    const text = await page.evaluate(() => document.body.innerText);
-    dump(`makespace-quote-step${step + 2}`, text);
-    await fillMakespaceDetails();
-    const priceMatch = text.replace(/\s+/g, ' ').match(priceRe);
-    if (priceMatch && priceMatch.length) {
-      const cards = await extractPriceCards(page);
-      let n = 0;
-      for (const c of cards) {
-        if (!c.prices.length) continue;
+  // Confirmed quote-page layout (2026-08-14, from the run that reached it):
+  //   "50% off for 12 weeks / Special Offer Price: per week for the first 12 weeks £17.49 /
+  //    Ongoing Price: per week £49.98 £34.98"
+  // Their page prints "per week" BEFORE the £ figure, so order-independent
+  // regexes anchored on the labels are used, not generic £/week patterns.
+  const MS_SIZES = ['25 sq ft', '50 sq ft', '75 sq ft', '100 sq ft'];
+  for (const sizeLabel of MS_SIZES) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await acceptCookies(page);
+      await settle(page, { quick: true });
+      // exact match so "25 sq ft" can't hit "125 sq ft"/"250 sq ft"
+      const sizeEl = page.getByText(new RegExp('^\\s*' + sizeLabel + '\\s*$')).first();
+      await sizeEl.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
+      try { await sizeEl.click({ timeout: 4000 }); }
+      catch (e) { await sizeEl.click({ timeout: 3000, force: true }); }
+      await page.waitForTimeout(600);
+      await page.locator('a:has-text("Get a Quote For This Room"), button:has-text("Get a Quote For This Room")').first().click({ timeout: 5000 });
+      await settle(page, { quick: true });
+      await fillMakespaceDetails();
+      await fillContactForm(page);
+      await clickNext(page);
+      await settle(page);
+      const text = await page.evaluate(() => document.body.innerText);
+      dump('makespace-quote-' + sizeLabel.replace(/\W+/g, ''), text);
+      const intro = text.match(/Special Offer Price:?[\s\S]{0,140}?£\s*([\d,.]+)/i);
+      const ongoing2 = text.match(/Ongoing Price:?[\s\S]{0,140}?£\s*([\d,.]+)[\s\S]{0,50}?£\s*([\d,.]+)/i);
+      const ongoing1 = ongoing2 || text.match(/Ongoing Price:?[\s\S]{0,140}?£\s*([\d,.]+)/i);
+      if (intro || ongoing1) {
+        const rack = ongoing1 ? parseFloat(ongoing1[1].replace(/,/g, '')) : null;
+        const disc = ongoing2 ? parseFloat(ongoing2[2].replace(/,/g, '')) : null;
         OUT.observations.push({
-          competitor: 'Make Space (Billericay)', metric: 'quote_after_test_form', size_sqft: c.size_sqft,
-          rack_rate: c.prices.length > 1 ? Math.max(...c.prices) : null,
-          offer_rate: Math.min(...c.prices), per: c.per || 'week', promo: c.promo,
-          source: page.url(), raw: c.text,
+          competitor: 'Make Space (Billericay)', metric: 'quote_after_test_form',
+          size_sqft: parseInt(sizeLabel), rack_rate: rack, offer_rate: disc ?? rack,
+          intro_rate: intro ? parseFloat(intro[1].replace(/,/g, '')) : null, per: 'week',
+          promo: (text.match(/\d+%\s*off[^£\n]{0,50}/i) || [''])[0].trim(),
+          source: page.url(),
+          raw: `intro=${intro && intro[1]} ongoing_std=${ongoing1 && ongoing1[1]} ongoing_web=${(ongoing2 && ongoing2[2]) || ''}`,
         });
-        n++;
+      } else {
+        OUT.warnings.push(`Make Space ${sizeLabel}: quote flow completed but no prices parsed — see dump makespace-quote-${sizeLabel.replace(/\W+/g, '')}.txt`);
       }
-      if (n === 0) OUT.observations.push({
-        competitor: 'Make Space (Billericay)', metric: 'quote_after_test_form', size_sqft: null,
-        rack_rate: null, offer_rate: null, per: '', promo: '',
-        source: page.url(), raw: (priceMatch || []).join(' | '),
-      });
-      break;
+    } catch (e) {
+      OUT.warnings.push(`Make Space ${sizeLabel}: ${String(e).split('\n')[0]}`);
     }
-    const asksDetails = await page.locator('input[type="email"], input[type="tel"], input[name*="name" i]').count();
-    if (asksDetails > 0) await fillContactForm(page);
-    if (!(await clickNext(page))) {
-      OUT.warnings.push(`Make Space: no way forward at quote step ${step + 1} and no prices found — see debug dumps.`);
-      break;
-    }
-    await settle(page);
   }
   await page.close();
 }
