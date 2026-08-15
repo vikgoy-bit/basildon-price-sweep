@@ -302,6 +302,54 @@
       "raw": "Storage units from £7.15 / week"
     },
     {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 25,
+      "rack_rate": 35.98,
+      "offer_rate": 28.98,
+      "intro_rate": 14.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=14.49 ongoing_std=35.98 ongoing_web=28.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 50,
+      "rack_rate": 49.98,
+      "offer_rate": 34.98,
+      "intro_rate": 17.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=17.49 ongoing_std=49.98 ongoing_web=34.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 75,
+      "rack_rate": 67.98,
+      "offer_rate": 64.98,
+      "intro_rate": 32.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=32.49 ongoing_std=67.98 ongoing_web=64.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 100,
+      "rack_rate": 88.98,
+      "offer_rate": 75.98,
+      "intro_rate": 37.99,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=37.99 ongoing_std=88.98 ongoing_web=75.98"
+    },
+    {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 25,
@@ -520,7 +568,6 @@
     "Storage King: no label.radio matching \"75 sq.ft\" (page has 0 radio labels).",
     "Storage King: no label.radio matching \"100 sq.ft\" (page has 0 radio labels).",
     "Storage King: no label.radio matching \"150 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"200 sq.ft\" (page has 0 radio labels).",
-    "Make Space: no way forward at quote step 2 and no prices found — see debug dumps."
+    "Storage King: no label.radio matching \"200 sq.ft\" (page has 0 radio labels)."
   ]
 }
