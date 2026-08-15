@@ -259,19 +259,27 @@ async function storageKing(ctx) {
       await acceptCookies(page);
       await settle(page, { quick: true });
       await page.waitForSelector('label.radio', { timeout: 15000 }).catch(() => {});
-      // Anchor at start only: labels contain a nested "Select" text so an exact
-      // full match fails; start-anchoring still keeps "25 sq.ft" off "125 sq.ft".
-      const sizeRadio = page.locator('label.radio').filter({ hasText: new RegExp('^\\s*' + label.replace('.', '\\.')) }).first();
-      if ((await sizeRadio.count()) === 0) {
-        OUT.warnings.push(`Storage King: no label.radio matching "${label}" (fresh context; page has ${await page.locator('label.radio').count()} radio labels).`);
+      // 2026-08-15 finding: the labels ARE present (26 of them) but Playwright's
+      // text filter matches none — their textContent carries hidden text beyond
+      // the visible size. Select by visible innerText via the page's own DOM.
+      const clicked = await page.evaluate((lbl) => {
+        const els = Array.from(document.querySelectorAll('label.radio'));
+        const el = els.find(e => ((e.innerText || '').replace(/\s+/g, ' ').trim()).startsWith(lbl));
+        if (!el) return { ok: false, labels: els.map(e => (e.innerText || '').replace(/\s+/g, ' ').trim()).slice(0, 30) };
+        el.scrollIntoView({ block: 'center' });
+        el.click();
+        const input = el.querySelector('input[type="radio"]') ||
+          (el.getAttribute('for') && document.getElementById(el.getAttribute('for')));
+        if (input) { input.click(); input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); }
+        return { ok: true };
+      }, label);
+      if (!clicked.ok) {
+        OUT.warnings.push(`Storage King: no visible label starting "${label}"; page labels: ${JSON.stringify(clicked.labels).slice(0, 300)}`);
         if (failDumps++ < 2) dump(`storageking-loopfail-${label.replace(/\W+/g, '')}`, await page.evaluate(() => document.body.innerText));
         await c2.close();
         continue;
       }
-      await sizeRadio.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
-      try { await sizeRadio.click({ timeout: 4000 }); }
-      catch (e) { await sizeRadio.click({ timeout: 4000, force: true }); } // flickity carousel can obscure it
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(700);
       const cont = page.locator('button:has-text("Continue"), a:has-text("Continue")').first();
       await cont.scrollIntoViewIfNeeded({ timeout: 4000 }).catch(() => {});
       await cont.click({ timeout: 8000 });
@@ -398,8 +406,17 @@ async function makeSpace(ctx) {
       // exact match so "25 sq ft" can't hit "125 sq ft"/"250 sq ft"
       const sizeEl = page.getByText(new RegExp('^\\s*' + sizeLabel + '\\s*$')).first();
       await sizeEl.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
-      try { await sizeEl.click({ timeout: 4000 }); }
-      catch (e) { await sizeEl.click({ timeout: 3000, force: true }); }
+      let sized = false;
+      try { await sizeEl.click({ timeout: 4000 }); sized = true; }
+      catch (e) {
+        // The card may be off-screen in the carousel — page through it and retry.
+        for (let n = 0; n < 13 && !sized; n++) {
+          try { await page.locator('button:has-text("›"), .flickity-button.next, [aria-label="Next"]').first().click({ timeout: 1500 }); } catch (e2) { break; }
+          await page.waitForTimeout(300);
+          try { await sizeEl.click({ timeout: 1500 }); sized = true; } catch (e3) {}
+        }
+        if (!sized) await sizeEl.click({ timeout: 2000, force: true });
+      }
       await page.waitForTimeout(600);
       await page.locator('a:has-text("Get a Quote For This Room"), button:has-text("Get a Quote For This Room")').first().click({ timeout: 5000 });
       await settle(page, { quick: true });
