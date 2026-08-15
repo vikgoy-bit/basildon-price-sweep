@@ -231,25 +231,41 @@ async function storageKing(ctx) {
     Array.from(document.querySelectorAll('a,button,[role="button"],input[type="submit"],label'))
       .map(e => `${e.tagName}.${(e.className || '').toString().slice(0, 60)}: ${((e.innerText || e.value || '')).replace(/\s+/g, ' ').trim().slice(0, 90)}`)
       .filter(t => t.length > 8).join('\n')));
+  await page.close();
 
   // Confirmed structure (2026-08-14 debug): sizes are radio LABELs
   // ("label.radio" with text like "25 sq.ft") in a flickity carousel, plus a
   // single Continue button that only works once a size radio is selected.
+  //
+  // 2026-08-15 finding: the initial load always shows the radios, but any
+  // RE-navigation in the same browser state renders 0 of them — their quote
+  // app remembers the session and resumes elsewhere. So every size gets a
+  // FRESH ISOLATED context (own cookies/storage), like a first-time visitor.
+  const browser = ctx.browser();
   const SK_SIZES = ['10 sq.ft', '25 sq.ft', '35 sq.ft', '50 sq.ft', '75 sq.ft', '100 sq.ft', '150 sq.ft', '200 sq.ft'];
+  let failDumps = 0;
   for (let i = 0; i < SK_SIZES.length; i++) {
     const label = SK_SIZES[i];
+    let c2 = null;
     try {
+      c2 = await browser.newContext({
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 BigTopPriceCheck/1.0',
+        locale: 'en-GB', timezoneId: 'Europe/London',
+      });
+      await c2.route('**/*', route =>
+        ['image', 'font', 'media'].includes(route.request().resourceType()) ? route.abort() : route.continue());
+      const page = await c2.newPage();
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await acceptCookies(page);
       await settle(page, { quick: true });
-      // The size radios render late (flickity carousel init) — the quick settle
-      // races them and finds 0. Wait for them explicitly before matching.
       await page.waitForSelector('label.radio', { timeout: 15000 }).catch(() => {});
       // Anchor at start only: labels contain a nested "Select" text so an exact
       // full match fails; start-anchoring still keeps "25 sq.ft" off "125 sq.ft".
       const sizeRadio = page.locator('label.radio').filter({ hasText: new RegExp('^\\s*' + label.replace('.', '\\.')) }).first();
       if ((await sizeRadio.count()) === 0) {
-        OUT.warnings.push(`Storage King: no label.radio matching "${label}" (page has ${await page.locator('label.radio').count()} radio labels).`);
+        OUT.warnings.push(`Storage King: no label.radio matching "${label}" (fresh context; page has ${await page.locator('label.radio').count()} radio labels).`);
+        if (failDumps++ < 2) dump(`storageking-loopfail-${label.replace(/\W+/g, '')}`, await page.evaluate(() => document.body.innerText));
+        await c2.close();
         continue;
       }
       await sizeRadio.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
@@ -296,9 +312,10 @@ async function storageKing(ctx) {
       }
     } catch (e) {
       OUT.warnings.push(`Storage King: size "${label}" failed: ${String(e).split('\n')[0]}`);
+    } finally {
+      try { if (c2) await c2.close(); } catch (e2) {}
     }
   }
-  await page.close();
 }
 
 async function bigTop(ctx) {
@@ -371,7 +388,8 @@ async function makeSpace(ctx) {
   //    Ongoing Price: per week £49.98 £34.98"
   // Their page prints "per week" BEFORE the £ figure, so order-independent
   // regexes anchored on the labels are used, not generic £/week patterns.
-  const MS_SIZES = ['25 sq ft', '50 sq ft', '75 sq ft', '100 sq ft'];
+  const MS_SIZES = ['10 sq ft', '16 sq ft', '20 sq ft', '25 sq ft', '35 sq ft', '50 sq ft', '75 sq ft',
+    '100 sq ft', '125 sq ft', '150 sq ft', '175 sq ft', '200 sq ft', '250 sq ft']; // full carousel (13 sizes)
   for (const sizeLabel of MS_SIZES) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -388,7 +406,7 @@ async function makeSpace(ctx) {
       await fillMakespaceDetails();
       await fillContactForm(page);
       await clickNext(page);
-      await settle(page);
+      await settle(page, { quick: true });
       const text = await page.evaluate(() => document.body.innerText);
       dump('makespace-quote-' + sizeLabel.replace(/\W+/g, ''), text);
       const intro = text.match(/Special Offer Price:?[\s\S]{0,140}?£\s*([\d,.]+)/i);
@@ -428,7 +446,7 @@ async function makeSpace(ctx) {
   // Hard per-site budgets so a hung site can never blow the workflow's 20-min limit.
   await withBudget('Shurgard', 180000, () => shurgard(ctx));
   await withBudget('Storage King', 420000, () => storageKing(ctx));
-  await withBudget('Make Space', 240000, () => makeSpace(ctx));
+  await withBudget('Make Space', 600000, () => makeSpace(ctx)); // 13 sizes × ~35s
   await withBudget('Big Top', 180000, () => bigTop(ctx));
   await browser.close().catch(() => {});
 
