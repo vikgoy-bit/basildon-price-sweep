@@ -304,6 +304,30 @@
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
+      "size_sqft": 10,
+      "rack_rate": 17.98,
+      "offer_rate": 12.98,
+      "intro_rate": 6.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=6.49 ongoing_std=17.98 ongoing_web=12.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 16,
+      "rack_rate": 21.98,
+      "offer_rate": 14.98,
+      "intro_rate": 7.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=7.49 ongoing_std=21.98 ongoing_web=14.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
       "size_sqft": 25,
       "rack_rate": 35.98,
       "offer_rate": 28.98,
@@ -312,6 +336,18 @@
       "promo": "50% off",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
       "raw": "intro=14.49 ongoing_std=35.98 ongoing_web=28.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 35,
+      "rack_rate": 40.98,
+      "offer_rate": 22.98,
+      "intro_rate": 11.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=11.49 ongoing_std=40.98 ongoing_web=22.98"
     },
     {
       "competitor": "Make Space (Billericay)",
@@ -348,6 +384,66 @@
       "promo": "50% off",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
       "raw": "intro=37.99 ongoing_std=88.98 ongoing_web=75.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 125,
+      "rack_rate": 106.98,
+      "offer_rate": 101.98,
+      "intro_rate": 50.99,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=50.99 ongoing_std=106.98 ongoing_web=101.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 150,
+      "rack_rate": 109.98,
+      "offer_rate": 109.98,
+      "intro_rate": 54.99,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=54.99 ongoing_std=109.98 ongoing_web="
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 175,
+      "rack_rate": 126.98,
+      "offer_rate": 126.98,
+      "intro_rate": 63.49,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=63.49 ongoing_std=126.98 ongoing_web="
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 200,
+      "rack_rate": 150.98,
+      "offer_rate": 143.98,
+      "intro_rate": 71.99,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=71.99 ongoing_std=150.98 ongoing_web=143.98"
+    },
+    {
+      "competitor": "Make Space (Billericay)",
+      "metric": "quote_after_test_form",
+      "size_sqft": 250,
+      "rack_rate": 165.98,
+      "offer_rate": 165.98,
+      "intro_rate": 82.99,
+      "per": "week",
+      "promo": "50% off",
+      "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
+      "raw": "intro=82.99 ongoing_std=165.98 ongoing_web="
     },
     {
       "competitor": "Big Top (own)",
@@ -561,13 +657,14 @@
   ],
   "warnings": [
     "Shurgard: API returned 14 units (full ladder).",
-    "Storage King: no label.radio matching \"10 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"25 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"35 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"50 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"75 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"100 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"150 sq.ft\" (page has 0 radio labels).",
-    "Storage King: no label.radio matching \"200 sq.ft\" (page has 0 radio labels)."
+    "Storage King: no label.radio matching \"10 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"25 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"35 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"50 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"75 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"100 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"150 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Storage King: no label.radio matching \"200 sq.ft\" (fresh context; page has 26 radio labels).",
+    "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 3000ms exceeded."
   ]
 }
