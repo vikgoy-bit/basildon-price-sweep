@@ -2,7 +2,7 @@ name: Daily price sweep
 
 on:
   schedule:
-    - cron: "30 4 * * *"   # 05:30 UK (BST) — before the Claude 7am merge run
+    - cron: "30 4 * * *"   # 05:30 UK (BST) â€” before the Claude 7am merge run
   workflow_dispatch: {}     # manual run button
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   sweep:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
