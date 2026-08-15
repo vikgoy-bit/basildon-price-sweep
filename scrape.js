@@ -43,6 +43,19 @@ const TEST_IDENTITY = {
 };
 const FORM_FILL_ALLOWED_HOSTS = ['www.storageking.co.uk', 'www.bigtopselfstorage.com', 'www.makespaceselfstorage.co.uk'];
 
+/**
+ * TESTING HOLDS (2026-08-15): Make Space and Big Top are captured and stable,
+ * so they're paused while Storage King is being debugged — no point re-quoting
+ * them on every test run. WHEN TESTING IS DONE: set every flag to true to
+ * activate the full daily sweep.
+ */
+const RUN = {
+  shurgard: true,     // stable (API) — cheap, leave on
+  storageking: true,  // under test
+  makespace: false,   // HOLD — complete, re-enable for production
+  bigtop: false,      // HOLD — complete, re-enable for production
+};
+
 const dataDir = path.join(__dirname, 'data');
 const dbgDir = path.join(dataDir, 'debug'); // inside data/ so the workflow commits it
 fs.mkdirSync(dbgDir, { recursive: true });
@@ -184,14 +197,22 @@ async function shurgard(ctx) {
     const units = ((apiData.stores || [])[0] || {}).units || [];
     for (const u of units) {
       const promoType = (u.promotion || {}).promotionType || '';
+      const p = u.pricing || {};
+      // strikethroughPrice is the STANDARD rate as an HTML string, e.g.
+      // "£45.<div class='sup'>23</div>" — extract pounds + decimals.
+      let rack = null;
+      const sm = String(p.strikethroughPrice || '').match(/£\s*(\d+)\.?[^\d]*(\d{2})?/);
+      if (sm) rack = parseFloat(sm[1] + '.' + (sm[2] || '00'));
+      const disc = (p.discount || {});
+      const endDate = disc.discountEndDate ? `; special rate ends ${disc.discountEndDate}` : '';
       OUT.observations.push({
         competitor: 'Shurgard Basildon', metric: 'unit',
         size_sqft: parseFloat(u.sizeDefault) || null,
-        rack_rate: null,
-        offer_rate: (u.pricing || {}).priceRaw ?? null,
-        welcome_rate: (u.pricing || {}).welcomePriceRaw ?? null,
+        rack_rate: rack,
+        offer_rate: p.priceRaw != null ? Math.round(p.priceRaw * 100) / 100 : null,
+        welcome_rate: p.welcomePriceRaw ?? null,
         per: 'week',
-        promo: promoType === 'FirstMonth' ? '£1 first month' : promoType === 'FiftyPercentOff' ? '50% off first month' : promoType,
+        promo: (promoType === 'FirstMonth' ? '£1 first month' : promoType === 'FiftyPercentOff' ? '50% off first month' : promoType) + endDate,
         source: 'https://www.shurgard.com/en-gb/api/stores/73/units',
         raw: `${u.isLocker ? 'Locker ' : ''}${u.sizeDefault} sq ft id=${u.id}`,
       });
@@ -280,9 +301,26 @@ async function storageKing(ctx) {
         continue;
       }
       await page.waitForTimeout(700);
+      // Diagnostic: did the size click actually select the radio?
+      const radioChecked = await page.evaluate(() => document.querySelectorAll('input[type="radio"]:checked').length);
+      if (radioChecked === 0) OUT.warnings.push(`Storage King "${label}": DOM click did not check any radio — their app may need real input events.`);
+      // Continue: try Playwright first, fall back to a DOM click (2026-08-15:
+      // the Playwright click times out even though the button exists).
       const cont = page.locator('button:has-text("Continue"), a:has-text("Continue")').first();
-      await cont.scrollIntoViewIfNeeded({ timeout: 4000 }).catch(() => {});
-      await cont.click({ timeout: 8000 });
+      await cont.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
+      try {
+        await cont.click({ timeout: 5000 });
+      } catch (e) {
+        const domCont = await page.evaluate(() => {
+          const els = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
+          const el = els.find(x => /continue/i.test((x.innerText || x.value || '')) && x.offsetParent !== null);
+          if (!el) return false;
+          el.scrollIntoView({ block: 'center' });
+          el.click();
+          return true;
+        });
+        if (!domCont) throw new Error('Continue button not clickable via Playwright or DOM');
+      }
       await settle(page, { quick: true });
       const text = await page.evaluate(() => document.body.innerText);
       if (i < 3) dump(`storageking-step2-${i}`, text);
@@ -410,7 +448,7 @@ async function makeSpace(ctx) {
       try { await sizeEl.click({ timeout: 4000 }); sized = true; }
       catch (e) {
         // The card may be off-screen in the carousel — page through it and retry.
-        for (let n = 0; n < 13 && !sized; n++) {
+        for (let n = 0; n < 5 && !sized; n++) {
           try { await page.locator('button:has-text("›"), .flickity-button.next, [aria-label="Next"]').first().click({ timeout: 1500 }); } catch (e2) { break; }
           await page.waitForTimeout(300);
           try { await sizeEl.click({ timeout: 1500 }); sized = true; } catch (e3) {}
@@ -461,10 +499,11 @@ async function makeSpace(ctx) {
     ['image', 'font', 'media'].includes(route.request().resourceType()) ? route.abort() : route.continue());
 
   // Hard per-site budgets so a hung site can never blow the workflow's 20-min limit.
-  await withBudget('Shurgard', 180000, () => shurgard(ctx));
-  await withBudget('Storage King', 420000, () => storageKing(ctx));
-  await withBudget('Make Space', 600000, () => makeSpace(ctx)); // 13 sizes × ~35s
-  await withBudget('Big Top', 180000, () => bigTop(ctx));
+  if (RUN.shurgard) await withBudget('Shurgard', 180000, () => shurgard(ctx));
+  if (RUN.storageking) await withBudget('Storage King', 420000, () => storageKing(ctx));
+  if (RUN.makespace) await withBudget('Make Space', 720000, () => makeSpace(ctx)); // 13 sizes × ~45s
+  if (RUN.bigtop) await withBudget('Big Top', 180000, () => bigTop(ctx));
+  Object.entries(RUN).filter(([, v]) => !v).forEach(([k]) => OUT.warnings.push(`${k}: ON HOLD (testing) — not run this sweep.`));
   await browser.close().catch(() => {});
 
   fs.writeFileSync(path.join(dataDir, 'latest.json'), JSON.stringify(OUT, null, 2));
