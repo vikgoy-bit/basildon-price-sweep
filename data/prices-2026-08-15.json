@@ -657,14 +657,15 @@
   ],
   "warnings": [
     "Shurgard: API returned 14 units (full ladder).",
-    "Storage King: no label.radio matching \"10 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"25 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"35 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"50 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"75 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"100 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"150 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Storage King: no label.radio matching \"200 sq.ft\" (fresh context; page has 26 radio labels).",
-    "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 3000ms exceeded."
+    "Storage King: size \"10 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"25 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"35 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"50 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"75 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"100 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"150 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Storage King: size \"200 sq.ft\" failed: TimeoutError: locator.click: Timeout 8000ms exceeded.",
+    "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
+    "Make Space: budget of 600s exceeded"
   ]
 }
