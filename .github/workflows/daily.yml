@@ -1,15 +1,15 @@
-name: Daily price sweep
+name: Daily price report
 
 on:
   schedule:
-    - cron: "30 4 * * *"   # 05:30 UK (BST) â€” before the Claude 7am merge run
-  workflow_dispatch: {}     # manual run button
+    - cron: "30 5 * * *"   # 06:30 UK (BST) — sweep, build report, email
+  workflow_dispatch: {}     # manual "Run workflow" button
 
 permissions:
   contents: write
 
 jobs:
-  sweep:
+  report:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -24,8 +24,26 @@ jobs:
           npm install playwright@1
           npx playwright install --with-deps chromium
 
-      - name: Run sweep
+      - name: Run sweep (Shurgard + Make Space + Big Top)
         run: node scrape.js
+        continue-on-error: true   # a scrape hiccup must not block the report
+
+      - name: Build report (append history + grid email)
+        run: python3 build_report.py
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Basildon Price Tracker <${{ secrets.MAIL_USERNAME }}>
+          to: vikgoy@gmail.com
+          cc: vikas@bigtopselfstorage.com,karan@bigtopselfstorage.com
+          subject: Basildon competitor prices — daily
+          html_body: file://report/email.html
 
       - name: Upload debug dumps
         if: always()
@@ -37,9 +55,9 @@ jobs:
 
       - name: Commit results
         run: |
-          git config user.name "price-sweep-bot"
+          git config user.name "price-report-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/
-          git diff --cached --quiet || git commit -m "Price sweep $(date -u +%F)"
+          git add data/ history.csv report/
+          git diff --cached --quiet || git commit -m "Daily report $(date -u +%F)"
           git pull --rebase origin main || true
           git push
