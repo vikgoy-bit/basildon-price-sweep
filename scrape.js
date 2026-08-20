@@ -479,11 +479,27 @@ async function makeSpace(ctx) {
       if (intro || ongoing1) {
         const rack = ongoing1 ? parseFloat(ongoing1[1].replace(/,/g, '')) : null;
         const disc = ongoing2 ? parseFloat(ongoing2[2].replace(/,/g, '')) : null;
+        const introVal = intro ? parseFloat(intro[1].replace(/,/g, '')) : null;
+        // Derive THIS unit's actual offer from its own numbers — do NOT trust a
+        // page-wide "50% off" banner (it may be a headline that this size doesn't get).
+        // Base = the price the intro is discounting from: the web rate if present, else standard.
+        const base = disc ?? rack;
+        // Duration of any intro period, e.g. "for the first 12 weeks".
+        const durM = text.match(/for (?:the )?(?:first )?(\d+)\s*weeks/i);
+        const dur = durM ? parseInt(durM[1]) : null;
+        let promo;
+        if (introVal != null && base != null && introVal < base - 0.01) {
+          const pct = Math.round((1 - introVal / base) * 100);
+          promo = `${pct}% off (£${introVal.toFixed(2)}/wk)` + (dur ? ` for first ${dur} weeks` : '');
+        } else {
+          // 175 sq ft case: quote returned but no genuine intro discount for this unit.
+          promo = 'no intro offer (standard price only)';
+        }
         OUT.observations.push({
           competitor: 'Make Space (Billericay)', metric: 'quote_after_test_form',
           size_sqft: parseInt(sizeLabel), rack_rate: rack, offer_rate: disc ?? rack,
-          intro_rate: intro ? parseFloat(intro[1].replace(/,/g, '')) : null, per: 'week',
-          promo: (text.match(/\d+%\s*off[^£\n]{0,50}/i) || [''])[0].trim(),
+          intro_rate: introVal, intro_weeks: dur, per: 'week',
+          promo,
           source: page.url(),
           raw: `intro=${intro && intro[1]} ongoing_std=${ongoing1 && ongoing1[1]} ongoing_web=${(ongoing2 && ongoing2[2]) || ''}`,
         });
