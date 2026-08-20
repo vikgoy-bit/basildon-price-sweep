@@ -104,6 +104,27 @@ def load_grid():
     return grid
 
 
+def load_1yr():
+    """Latest 12-month fixed-term manual quotes (metric manual_quote_1yr):
+    size -> (intro_offer_pw, ongoing_rate_pw). Lowest offer wins if several
+    competitors ever supply 1yr data for the same size."""
+    latest = {}
+    for r in read_hist():
+        if r['metric'] != 'manual_quote_1yr' or not r['size_sqft'] or not r['offer_rate_pw_gbp']:
+            continue
+        key = (r['competitor'], float(r['size_sqft']))
+        rack = float(r['rack_rate_pw_gbp']) if r['rack_rate_pw_gbp'] else None
+        val = (r['date'], float(r['offer_rate_pw_gbp']), rack)
+        if key not in latest or val[0] >= latest[key][0]:
+            latest[key] = val
+    out = {}
+    for (comp, size), (_, offer, rack) in latest.items():
+        cur = out.get(size)
+        if cur is None or offer < cur[0]:
+            out[size] = (offer, rack)
+    return out
+
+
 def detect_changes():
     """Compare the two most recent dates of Shurgard/Make Space automated data."""
     per = defaultdict(dict)  # date -> (comp,size) -> offer
@@ -125,11 +146,14 @@ def detect_changes():
     return changes
 
 
-def build_email(grid, summary_lines, footnotes):
-    sizes = sorted(grid.keys())
+def build_email(grid, summary_lines, footnotes, grid1yr=None):
+    grid1yr = grid1yr or {}
+    sizes = sorted(set(grid.keys()) | set(grid1yr.keys()))
     th = '<tr><th style="padding:6px 10px;background:#DCE3F0;color:#1F3864;text-align:left;border-bottom:2px solid #1F3864;">Size (sq ft)</th>'
     for _, name, mark in COLS:
         th += f'<th style="padding:6px 10px;background:#DCE3F0;color:#1F3864;text-align:right;border-bottom:2px solid #1F3864;">{name}{mark}</th>'
+    for extra in ('1yr promo‡', '1yr rate‡'):
+        th += f'<th style="padding:6px 10px;background:#DCE3F0;color:#1F3864;text-align:right;border-bottom:2px solid #1F3864;">{extra}</th>'
     th += '</tr>'
     rows = ''
     for size in sizes:
@@ -149,6 +173,15 @@ def build_email(grid, summary_lines, footnotes):
                 if comp != 'Big Top (own)' and bt is not None and p < bt:
                     style = 'background:#FDE7E9;color:#B00020;font-weight:bold;'
             tds += f'<td style="padding:5px 10px;border-bottom:1px solid #ddd;text-align:right;vertical-align:top;{style}">{cell}</td>'
+        y = grid1yr.get(size)
+        if y is None:
+            tds += '<td style="padding:5px 10px;border-bottom:1px solid #ddd;text-align:right;vertical-align:top;color:#999;">&mdash;</td>' * 2
+        else:
+            offer, rack = y
+            cell1 = f'£{offer:.2f}'
+            cell2 = f'£{rack:.2f}' if rack is not None else '&mdash;'
+            for cell in (cell1, cell2):
+                tds += f'<td style="padding:5px 10px;border-bottom:1px solid #ddd;text-align:right;vertical-align:top;">{cell}</td>'
         rows += f'<tr>{tds}</tr>'
     summary_html = ''.join(f'<p style="margin:4px 0;">{s}</p>' for s in summary_lines)
     notes_html = ''.join(f'<p style="margin:3px 0;font-size:12px;color:#555;">{n}</p>' for n in footnotes)
@@ -179,13 +212,15 @@ def main():
         '** Storage King: promo rate large, standard beneath. From your manual/browser check; carried forward until refreshed.',
         '*** Safestore: online rate large, standard beneath. From your manual check; carried forward until refreshed.',
         '† Make Space (Billericay): web rate large, standard beneath. Intro offers vary by unit — the per-size promo is captured live on each sweep (some sizes get no intro discount at all), so trust the cell/notes, not a blanket headline.',
+        '‡ 1yr columns: 12-month fixed-term manual quotes (currently Safestore). "1yr promo" = intro weekly rate for the first 52 weeks; "1yr rate" = ongoing discounted weekly rate. Carried forward until refreshed; blank where no 1-yr quote exists.',
         'Big Top: authoritative rate card (weekly, inc VAT); £1 for first 6 weeks. A blank where a rival lists a price = that Big Top size is out of stock.',
     ]
     grid = load_grid()
-    html = build_email(grid, summary, footnotes)
+    grid1 = load_1yr()
+    html = build_email(grid, summary, footnotes, grid1)
     open(os.path.join(OUTDIR, 'email.html'), 'w').write(html)
     open(os.path.join(OUTDIR, 'subject.txt'), 'w').write(f'Basildon competitor prices — {TODAY}')
-    print(f'{msg}; {len(changes)} changes; grid sizes={len(grid)}')
+    print(f'{msg}; {len(changes)} changes; grid sizes={len(grid)}; 1yr sizes={len(grid1)}')
 
 
 if __name__ == '__main__':
