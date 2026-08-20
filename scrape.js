@@ -264,7 +264,11 @@ async function storageKing(ctx) {
   // app remembers the session and resumes elsewhere. So every size gets a
   // FRESH ISOLATED context (own cookies/storage), like a first-time visitor.
   const browser = ctx.browser();
-  const SK_SIZES = ['10 sq.ft', '25 sq.ft', '35 sq.ft', '50 sq.ft', '75 sq.ft', '100 sq.ft', '150 sq.ft', '200 sq.ft'];
+  // NB Storage King scraping is OFF (RUN.storageking=false, Cloudflare-blocked; manual only).
+  // Full size list kept for completeness if ever re-enabled.
+  const SK_SIZES = ['10 sq.ft', '15 sq.ft', '20 sq.ft', '25 sq.ft', '30 sq.ft', '35 sq.ft', '40 sq.ft',
+    '45 sq.ft', '50 sq.ft', '55 sq.ft', '60 sq.ft', '70 sq.ft', '75 sq.ft', '100 sq.ft', '125 sq.ft',
+    '130 sq.ft', '135 sq.ft', '150 sq.ft', '175 sq.ft', '180 sq.ft', '200 sq.ft', '250 sq.ft', '260 sq.ft'];
   let failDumps = 0;
   for (let i = 0; i < SK_SIZES.length; i++) {
     const label = SK_SIZES[i];
@@ -435,8 +439,12 @@ async function makeSpace(ctx) {
   //    Ongoing Price: per week £49.98 £34.98"
   // Their page prints "per week" BEFORE the £ figure, so order-independent
   // regexes anchored on the labels are used, not generic £/week patterns.
-  const MS_SIZES = ['10 sq ft', '16 sq ft', '20 sq ft', '25 sq ft', '35 sq ft', '50 sq ft', '75 sq ft',
-    '100 sq ft', '125 sq ft', '150 sq ft', '175 sq ft', '200 sq ft', '250 sq ft']; // full carousel (13 sizes)
+  // Full union of every size seen across competitors. Sizes Make Space doesn't
+  // stock fail fast ("size option not found") and are skipped — harmless.
+  const MS_SIZES = ['10 sq ft', '15 sq ft', '16 sq ft', '20 sq ft', '25 sq ft', '30 sq ft', '35 sq ft',
+    '40 sq ft', '45 sq ft', '50 sq ft', '55 sq ft', '60 sq ft', '70 sq ft', '75 sq ft', '100 sq ft',
+    '125 sq ft', '130 sq ft', '135 sq ft', '150 sq ft', '175 sq ft', '180 sq ft', '200 sq ft',
+    '250 sq ft', '260 sq ft']; // 24 sizes — attempt all
   for (const sizeLabel of MS_SIZES) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -502,7 +510,7 @@ async function makeSpace(ctx) {
   // Hard per-site budgets so a hung site can never blow the workflow's 20-min limit.
   if (RUN.shurgard) await withBudget('Shurgard', 180000, () => shurgard(ctx));
   if (RUN.storageking) await withBudget('Storage King', 420000, () => storageKing(ctx));
-  if (RUN.makespace) await withBudget('Make Space', 720000, () => makeSpace(ctx)); // 13 sizes × ~45s
+  if (RUN.makespace) await withBudget('Make Space', 1020000, () => makeSpace(ctx)); // 24 sizes; offered ~40s, not-offered fail fast
   if (RUN.bigtop) await withBudget('Big Top', 180000, () => bigTop(ctx));
   Object.entries(RUN).filter(([, v]) => !v).forEach(([k]) => OUT.warnings.push(`${k}: ON HOLD (testing) — not run this sweep.`));
   await browser.close().catch(() => {});
