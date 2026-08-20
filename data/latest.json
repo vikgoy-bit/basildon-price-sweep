@@ -526,6 +526,28 @@
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
+      "size_sqft": 75,
+      "rack_rate": null,
+      "offer_rate": 234,
+      "per": "mo",
+      "promo": "OPENING OFFER - £1 for 6 Weeks SMALL UNIT 75sq ft 24/7 CCTV Monitoring Smart Entry £234/mo £54/week inc VAT· billed monthly Select",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "OPENING OFFER - £1 for 6 Weeks SMALL UNIT 75sq ft 24/7 CCTV Monitoring Smart Entry £234/mo £54/week inc VAT· billed monthly Select"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": 75,
+      "rack_rate": null,
+      "offer_rate": 54,
+      "per": "week",
+      "promo": "OPENING OFFER - £1 for 6 Weeks SMALL UNIT 75sq ft 24/7 CCTV Monitoring Smart Entry £234/mo £54/week inc VAT· billed monthly Select",
+      "source": "https://www.bigtopselfstorage.com/reserve",
+      "raw": "OPENING OFFER - £1 for 6 Weeks SMALL UNIT 75sq ft 24/7 CCTV Monitoring Smart Entry £234/mo £54/week inc VAT· billed monthly Select"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
       "size_sqft": 85,
       "rack_rate": null,
       "offer_rate": 260,
