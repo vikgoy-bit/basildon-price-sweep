@@ -6,10 +6,13 @@ Runs INSIDE GitHub Actions (which has repo write access + reliable headless).
 3. Appends today's automated rows to history.csv (Shurgard + Make Space only;
    Big Top stays the static rate card; Storage King/Safestore stay manual).
 4. Builds the grid email -> report/email.html + report/subject.txt.
+   Layout: one colour-banded column group per competitor, each group =
+   Discounted | Standard | Discount | Duration (Safestore adds two 1yr columns).
 5. Detects day-over-day changes for the summary line.
 Self-contained: no dependency on the Claude session or the Projects tool.
 """
-import csv, json, os
+import csv, json, os, re
+from html import escape
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
@@ -22,12 +25,13 @@ os.makedirs(OUTDIR, exist_ok=True)
 # UK date (Actions runs UTC; BST is UTC+1 in summer — close enough for a date stamp)
 TODAY = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime('%Y-%m-%d')
 
-COLS = [
-    ('Big Top (own)', 'Big Top', ''),
-    ('Shurgard Basildon', 'Shurgard', '*'),
-    ('Storage King Basildon', 'Storage King', '**'),
-    ('Safestore Basildon', 'Safestore', '***'),
-    ('Make Space (Billericay)', 'Make Space', '†'),
+# (competitor key, display name, footnote mark, dark colour, light band colour)
+GROUPS = [
+    ('Big Top (own)', 'Big Top', '', '#1F3864', '#DCE3F0'),
+    ('Shurgard Basildon', 'Shurgard', '*', '#9C0006', '#F2CBCC'),
+    ('Storage King Basildon', 'Storage King', '**', '#7F6000', '#FFF2CC'),
+    ('Make Space (Billericay)', 'Make Space', '†', '#375623', '#E2EFDA'),
+    ('Safestore Basildon', 'Safestore', '***', '#1F3864', '#D9E1F2'),
 ]
 PRICE_METRICS = {'unit', 'featured_unit', 'from_price', 'quote_after_test_form',
                  'quote_step_price', 'manual_quote', 'ratecard'}
@@ -77,6 +81,7 @@ def append_today():
 
 
 def load_grid():
+    """size -> comp -> (offer, rack_or_None, promo_text) for the latest date."""
     latest = {}
     sticky_rack = {}  # (comp,size) -> most recent non-empty standard rate seen (any date)
     for r in read_hist():
@@ -85,29 +90,26 @@ def load_grid():
         key = (r['competitor'], float(r['size_sqft']))
         rack = float(r['rack_rate_pw_gbp']) if r['rack_rate_pw_gbp'] else None
         # remember the newest non-empty standard rate so a bare daily sweep row
-        # (offer only) doesn't wipe the std sub-line captured earlier.
+        # (offer only) doesn't wipe the std value captured earlier.
         if rack is not None and (key not in sticky_rack or r['date'] >= sticky_rack[key][0]):
             sticky_rack[key] = (r['date'], rack)
-        val = (r['date'], float(r['offer_rate_pw_gbp']), rack)
-        if key not in latest or val[0] >= latest[key][0]:
-            if key in latest and val[0] == latest[key][0]:
-                keep = latest[key]
-                val = (val[0], min(val[1], keep[1]), val[2] if val[1] <= keep[1] else keep[2])
+        val = (r['date'], float(r['offer_rate_pw_gbp']), rack, r['promo_text'] or '')
+        cur = latest.get(key)
+        if cur is None or val[0] > cur[0] or (val[0] == cur[0] and val[1] < cur[1]):
             latest[key] = val
     grid = defaultdict(dict)
-    for (comp, size), (_, price, rack) in latest.items():
+    for (comp, size), (_, price, rack, promo) in latest.items():
         if rack is None and (comp, size) in sticky_rack:
             rack = sticky_rack[(comp, size)][1]  # inherit last known standard rate
         cur = grid[size].get(comp)
         if cur is None or price < cur[0]:
-            grid[size][comp] = (price, rack)
+            grid[size][comp] = (price, rack, promo)
     return grid
 
 
 def load_1yr():
     """Latest 12-month fixed-term manual quotes (metric manual_quote_1yr):
-    size -> (intro_offer_pw, ongoing_rate_pw). Lowest offer wins if several
-    competitors ever supply 1yr data for the same size."""
+    size -> (intro_offer_pw, follow_on_rate_pw)."""
     latest = {}
     for r in read_hist():
         if r['metric'] != 'manual_quote_1yr' or not r['size_sqft'] or not r['offer_rate_pw_gbp']:
@@ -146,50 +148,125 @@ def detect_changes():
     return changes
 
 
+def promo_cols(comp, promo):
+    """Parse a promo_text into (Discount, Duration) display strings. Never raises."""
+    dash = '&mdash;'
+    try:
+        if comp == 'Big Top (own)':
+            return ('£1/wk', 'first 6 weeks')
+        if not promo:
+            return (dash, dash)
+        if comp == 'Storage King Basildon':
+            m = re.search(r'(\d+)% off', promo)
+            d = (m.group(1) + '%') if m else dash
+            m2 = re.search(r'first (\d+) months?', promo)
+            t = ('first %s months' % m2.group(1)) if m2 else dash
+            return (d, t)
+        if comp == 'Safestore Basildon':
+            m = re.search(r'(\d+)% online discount', promo)
+            d = (m.group(1) + '% online') if m else dash
+            if promo.startswith('£1 first month'):
+                t = '£1 first month'
+            else:
+                m2 = re.search(r'50% off first (\d+) weeks', promo)
+                t = ('50% off first %s weeks' % m2.group(1)) if m2 else escape(promo.split('—')[0].strip()[:40])
+            return (d, t)
+        if comp == 'Shurgard Basildon':
+            if '£1 first month' in promo:
+                d = '£1 first month'
+            elif '50% off first month' in promo:
+                d = '50% first month'
+            else:
+                m = re.search(r'(\d+)% off', promo)
+                d = (m.group(1) + '%') if m else dash
+            m2 = re.search(r'ends (\d{2}/\d{2}/\d{4})', promo)
+            t = ('ends %s' % m2.group(1)) if m2 else dash
+            return (d, t)
+        if comp == 'Make Space (Billericay)':
+            m = re.search(r'(\d+)% off \(([^)]*)\)', promo)
+            if m:
+                d = '%s%% (%s)' % (m.group(1), escape(m.group(2)))
+            else:
+                m1 = re.search(r'(\d+)% off', promo)
+                d = (m1.group(1) + '%') if m1 else dash
+            m2 = re.search(r'first (\d+) weeks', promo)
+            t = ('first %s weeks' % m2.group(1)) if m2 else dash
+            return (d, t)
+        return (dash, escape(promo[:40]))
+    except Exception:
+        return (dash, dash)
+
+
+def _yr_cells(y, base):
+    dash = '<td style="%scolor:#999;">&mdash;</td>' % base
+    if y is None:
+        return dash * 2
+    offer, rack = y
+    c1 = '<td style="%s">£%.2f</td>' % (base, offer)
+    c2 = ('<td style="%s">£%.2f</td>' % (base, rack)) if rack is not None else dash
+    return c1 + c2
+
+
 def build_email(grid, summary_lines, footnotes, grid1yr=None):
     grid1yr = grid1yr or {}
     sizes = sorted(set(grid.keys()) | set(grid1yr.keys()))
-    th = '<tr><th style="padding:6px 10px;background:#DCE3F0;color:#1F3864;text-align:left;border-bottom:2px solid #1F3864;">Size (sq ft)</th>'
-    for _, name, mark in COLS:
-        th += f'<th style="padding:6px 10px;background:#DCE3F0;color:#1F3864;text-align:right;border-bottom:2px solid #1F3864;">{name}{mark}</th>'
-    for extra in ('1yr promo‡', '1yr rate‡'):
-        th += f'<th style="padding:6px 10px;background:#DCE3F0;color:#1F3864;text-align:right;border-bottom:2px solid #1F3864;">{extra}</th>'
-    th += '</tr>'
+    h1 = ('<tr><th rowspan="2" style="padding:6px 8px;color:#1F3864;text-align:left;'
+          'border-bottom:2px solid #1F3864;vertical-align:bottom;">Size (sq ft)</th>')
+    for comp, name, mark, dark, light in GROUPS:
+        span = 6 if comp == 'Safestore Basildon' else 4
+        h1 += ('<th colspan="%d" style="padding:6px 8px;background:%s;color:%s;'
+               'text-align:center;border-bottom:1px solid %s;">%s%s</th>' % (span, light, dark, dark, name, mark))
+    h1 += '</tr>'
+    h2 = '<tr>'
+    for comp, name, mark, dark, light in GROUPS:
+        subs = ['Discounted', 'Standard', 'Discount', 'Duration']
+        if comp == 'Safestore Basildon':
+            subs += ['1yr promo‡', '1yr follow on rate‡']
+        for s in subs:
+            h2 += ('<th style="padding:4px 8px;background:%s;color:#666;font-size:11px;'
+                   'text-align:right;border-bottom:2px solid %s;">%s</th>' % (light, dark, s))
+    h2 += '</tr>'
+
     rows = ''
     for size in sizes:
         bt_entry = grid[size].get('Big Top (own)')
         bt = bt_entry[0] if bt_entry else None
-        tds = f'<td style="padding:5px 10px;border-bottom:1px solid #ddd;font-weight:bold;">{int(size)}</td>'
-        for comp, _, _ in COLS:
+        tds = '<td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:bold;">%d</td>' % int(size)
+        for comp, name, mark, dark, light in GROUPS:
+            base = ('padding:4px 8px;border-bottom:1px solid #eee;text-align:right;'
+                    'vertical-align:top;background:%s;' % light)
+            dash = '<td style="%scolor:#999;">&mdash;</td>' % base
             entry = grid[size].get(comp)
             if entry is None:
-                cell, style = '&mdash;', 'color:#999;'
+                cells = dash * 4
+                if comp == 'Safestore Basildon':
+                    cells += _yr_cells(grid1yr.get(size), base)
+                tds += cells
+                continue
+            price, rack, promo = entry
+            hot = comp != 'Big Top (own)' and bt is not None and price < bt
+            hot_style = 'color:#C00000;font-weight:bold;' if hot else ''
+            if rack is None or abs(rack - price) < 0.01:
+                # single price (rate card / no separate standard): show under Standard
+                cells = dash + '<td style="%s%s">£%.2f</td>' % (base, hot_style or 'font-weight:bold;', price)
             else:
-                p, rack = entry
-                cell = f'£{p:.2f}'
-                if rack and abs(rack - p) >= 0.01:
-                    cell += f'<br><span style="font-size:10px;color:#777;font-weight:normal;">std £{rack:.2f}</span>'
-                style = ''
-                if comp != 'Big Top (own)' and bt is not None and p < bt:
-                    style = 'background:#FDE7E9;color:#B00020;font-weight:bold;'
-            tds += f'<td style="padding:5px 10px;border-bottom:1px solid #ddd;text-align:right;vertical-align:top;{style}">{cell}</td>'
-        y = grid1yr.get(size)
-        if y is None:
-            tds += '<td style="padding:5px 10px;border-bottom:1px solid #ddd;text-align:right;vertical-align:top;color:#999;">&mdash;</td>' * 2
-        else:
-            offer, rack = y
-            cell1 = f'£{offer:.2f}'
-            cell2 = f'£{rack:.2f}' if rack is not None else '&mdash;'
-            for cell in (cell1, cell2):
-                tds += f'<td style="padding:5px 10px;border-bottom:1px solid #ddd;text-align:right;vertical-align:top;">{cell}</td>'
-        rows += f'<tr>{tds}</tr>'
+                cells = ('<td style="%s%s">£%.2f</td>' % (base, hot_style, price)
+                         + '<td style="%s%s">£%.2f</td>' % (base, hot_style, rack))
+            d, t = promo_cols(comp, promo)
+            cells += '<td style="%sfont-size:11px;color:#444;">%s</td>' % (base, d)
+            cells += '<td style="%sfont-size:11px;color:#444;">%s</td>' % (base, t)
+            if comp == 'Safestore Basildon':
+                cells += _yr_cells(grid1yr.get(size), base)
+            tds += cells
+        rows += '<tr>%s</tr>' % tds
+
     summary_html = ''.join(f'<p style="margin:4px 0;">{s}</p>' for s in summary_lines)
     notes_html = ''.join(f'<p style="margin:3px 0;font-size:12px;color:#555;">{n}</p>' for n in footnotes)
     return f"""<html><body style="font-family:Arial,sans-serif;color:#222;">
 <h2 style="margin:0 0 4px;">Basildon competitor prices &mdash; {TODAY}</h2>
-<p style="margin:2px 0 10px;font-size:13px;color:#555;">Weekly rates: large = current selling/web rate, small "std" = standard rate after promo. Red = a rival selling rate below Big Top at that size. &mdash; = not available.</p>
+<p style="margin:2px 0 10px;font-size:13px;color:#555;">Weekly rates (&pound;, inc VAT). Discounted = current selling/web rate; Standard = rate after the promo ends; a single price under Standard means no separate discounted rate. Red = a rival selling rate below Big Top at that size. &mdash; = not available.</p>
 {summary_html}
-<table style="border-collapse:collapse;margin:10px 0;font-size:13px;">{th}{rows}</table>
+<table style="border-collapse:collapse;margin:10px 0;font-size:12px;">{h1}{h2}{rows}</table>
 <h3 style="margin:14px 0 4px;font-size:14px;">Comments</h3>
 {notes_html}
 </body></html>"""
@@ -208,12 +285,12 @@ def main():
             summary.append('<b>Watch:</b> Shurgard special rates end 21 Aug 2026.')
             break
     footnotes = [
-        '* Shurgard: web (special) rate large, standard beneath. £1 first month; special rates end 21 Aug 2026.',
-        '** Storage King: promo rate large, standard beneath. From your manual/browser check; carried forward until refreshed.',
-        '*** Safestore: online rate large, standard beneath. From your manual check; carried forward until refreshed.',
-        '† Make Space (Billericay): web rate large, standard beneath. Intro offers vary by unit — the per-size promo is captured live on each sweep (some sizes get no intro discount at all), so trust the cell/notes, not a blanket headline.',
-        '‡ 1yr columns: 12-month fixed-term manual quotes (currently Safestore). "1yr promo" = intro weekly rate for the first 52 weeks; "1yr rate" = ongoing discounted weekly rate. Carried forward until refreshed; blank where no 1-yr quote exists.',
-        'Big Top: authoritative rate card (weekly, inc VAT); £1 for first 6 weeks. A blank where a rival lists a price = that Big Top size is out of stock.',
+        '* Shurgard: swept daily; Discount/Duration parsed from the live web promo.',
+        '** Storage King: manual check; carried forward until refreshed.',
+        '*** Safestore: manual check; carried forward until refreshed.',
+        '† Make Space (Billericay): swept daily; intro offers vary by unit — some sizes get no intro discount at all, so trust the per-size Discount cell, not a blanket headline.',
+        '‡ Safestore 1yr columns: 12-month fixed-term manual quotes. "1yr promo" = intro weekly rate for the first 52 weeks; "1yr follow on rate" = ongoing discounted weekly rate. Carried forward until refreshed; blank where no 1-yr quote exists.',
+        'Big Top: authoritative rate card (weekly, inc VAT), shown under Standard; £1/wk for the first 6 weeks. A blank where a rival lists a price = that Big Top size is out of stock.',
     ]
     grid = load_grid()
     grid1 = load_1yr()
