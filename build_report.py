@@ -78,11 +78,16 @@ def append_today():
 
 def load_grid():
     latest = {}
+    sticky_rack = {}  # (comp,size) -> most recent non-empty standard rate seen (any date)
     for r in read_hist():
         if r['metric'] not in PRICE_METRICS or not r['size_sqft'] or not r['offer_rate_pw_gbp']:
             continue
         key = (r['competitor'], float(r['size_sqft']))
         rack = float(r['rack_rate_pw_gbp']) if r['rack_rate_pw_gbp'] else None
+        # remember the newest non-empty standard rate so a bare daily sweep row
+        # (offer only) doesn't wipe the std sub-line captured earlier.
+        if rack is not None and (key not in sticky_rack or r['date'] >= sticky_rack[key][0]):
+            sticky_rack[key] = (r['date'], rack)
         val = (r['date'], float(r['offer_rate_pw_gbp']), rack)
         if key not in latest or val[0] >= latest[key][0]:
             if key in latest and val[0] == latest[key][0]:
@@ -91,6 +96,8 @@ def load_grid():
             latest[key] = val
     grid = defaultdict(dict)
     for (comp, size), (_, price, rack) in latest.items():
+        if rack is None and (comp, size) in sticky_rack:
+            rack = sticky_rack[(comp, size)][1]  # inherit last known standard rate
         cur = grid[size].get(comp)
         if cur is None or price < cur[0]:
             grid[size][comp] = (price, rack)
@@ -171,7 +178,7 @@ def main():
         '* Shurgard: web (special) rate large, standard beneath. £1 first month; special rates end 21 Aug 2026.',
         '** Storage King: promo rate large, standard beneath. From your manual/browser check; carried forward until refreshed.',
         '*** Safestore: online rate large, standard beneath. From your manual check; carried forward until refreshed.',
-        '† Make Space (Billericay): web rate large, standard beneath. Intro 50% off first 12 weeks.',
+        '† Make Space (Billericay): web rate large, standard beneath. Intro offers vary by unit — the per-size promo is captured live on each sweep (some sizes get no intro discount at all), so trust the cell/notes, not a blanket headline.',
         'Big Top: authoritative rate card (weekly, inc VAT); £1 for first 6 weeks. A blank where a rival lists a price = that Big Top size is out of stock.',
     ]
     grid = load_grid()
