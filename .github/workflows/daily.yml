@@ -54,6 +54,7 @@ jobs:
           retention-days: 14
 
       - name: Commit results
+        if: always()
         run: |
           git config user.name "price-report-bot"
           git config user.email "actions@users.noreply.github.com"
