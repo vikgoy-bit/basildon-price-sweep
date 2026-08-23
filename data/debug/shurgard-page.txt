@@ -73,13 +73,13 @@ FIRST MONTH'S RENT
  Special Price
 Not sure what size?
 Size help
-25 sq ft
+20 sq ft
 £1
 FIRST MONTH'S RENT
-£16.85/week
-£8.54/week
+£16.62/week
+£8.31/week
  Special Price
-See all 13 units
+See all 14 units
 Why choose Shurgard
 
 Safe & secure
@@ -110,8 +110,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sat
-7.00-21.00
 Sun
 7.00-21.00
 Mon
@@ -123,13 +121,13 @@ Wed
 Thu
 7.00-21.00
 Fri
+7.00-21.00
+Sat
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sat
-Closed
 Sun
 Closed
 Mon
@@ -142,11 +140,11 @@ Thu
 9.00-17.30
 Fri
 9.00-17.30
+Sat
+Closed
 Phone hours
 For phone assistance
 0126 891 9015
-Sat
-9.00-18.00
 Sun
 9.00-18.00
 Mon
@@ -159,6 +157,8 @@ Thu
 8.00-20.00
 Fri
 8.00-20.00
+Sat
+9.00-18.00
 Self storage units in Basildon
 
 Welcome to Shurgard Basildon, your reliable source for self-storage solutions in the heart of Basildon.
