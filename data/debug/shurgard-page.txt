@@ -26,8 +26,8 @@ true
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
 0126 891 9015
-Office: closed now
-Access: closed now, open at 7.00
+Office: closed now, open at 9.00
+Access: open until 21.00
  
 All
 < 40 sq ft
@@ -110,8 +110,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sun
-7.00-21.00
 Mon
 7.00-21.00
 Tue
@@ -123,13 +121,13 @@ Thu
 Fri
 7.00-21.00
 Sat
+7.00-21.00
+Sun
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sun
-Closed
 Mon
 9.00-17.30
 Tue
@@ -141,12 +139,12 @@ Thu
 Fri
 9.00-17.30
 Sat
+Closed
+Sun
 Closed
 Phone hours
 For phone assistance
 0126 891 9015
-Sun
-9.00-18.00
 Mon
 8.00-20.00
 Tue
@@ -158,6 +156,8 @@ Thu
 Fri
 8.00-20.00
 Sat
+9.00-18.00
+Sun
 9.00-18.00
 Self storage units in Basildon
 
