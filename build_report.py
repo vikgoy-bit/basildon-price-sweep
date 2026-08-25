@@ -2,14 +2,41 @@
 """
 Runs INSIDE GitHub Actions (which has repo write access + reliable headless).
 1. Reads history.csv (all prior data incl. manual Storage King/Safestore + Big Top rate card).
-2. Reads data/latest.json (today's sweep: Shurgard API + Make Space).
-3. Appends today's automated rows to history.csv (Shurgard + Make Space only;
-   Big Top stays the static rate card; Storage King/Safestore stay manual).
+2. Reads data/latest.json (today's sweep: Shurgard API + Make Space + Big Top).
+3. Appends today's automated rows to history.csv:
+   - Shurgard + Make Space: unchanged, always appended as before.
+   - Big Top: HYBRID (v4, 25 Aug 2026). Sizes the live site shows today get a
+     fresh row (weekly-normalised, monthly x12/52); sizes NOT shown today
+     (out of stock / off the site) are simply not written, so load_grid()'s
+     latest-date-per-size lookup naturally falls back to whatever that size's
+     last-known row was (in practice: the 15 Aug 2026 ratecard baseline, or a
+     more recent live row if it was visible more recently than that).
+     A sanity guard rejects any weekly figure outside £5-£600 before writing
+     it — this exists specifically to catch a mis-parsed promo banner (e.g.
+     a stray "£1" from a "£1 for 6 weeks" banner) rather than a real price;
+     a rejected size falls back to last-known exactly like a hidden size.
 4. Builds the grid email -> report/email.html + report/subject.txt.
    Layout: one colour-banded column group per competitor, each group =
    Discounted | Standard | Discount | Duration (Safestore adds two 1yr columns).
-5. Detects day-over-day changes for the summary line.
+5. Detects day-over-day changes for the summary line, PER COMPETITOR (each
+   competitor compared against its own most recent prior date, not a single
+   shared "yesterday" across all three — Big Top may have gaps, e.g. no
+   automated row between the 15 Aug ratecard baseline and the first hybrid
+   run, so a shared-date comparison would silently miss a real Big Top move
+   on exactly the run where catching it matters most).
 Self-contained: no dependency on the Claude session or the Projects tool.
+
+CAVEAT (unchanged from architecture doc): if a rate is changed in Storeganise
+but bigtopselfstorage.com isn't republished, this sweep re-indexes the OLD
+price from the still-stale site. An empty Big Top change line after a rate
+change you know happened means the site itself is stale, not that nothing
+moved — check the site before assuming the sweep is wrong.
+
+NOTE: the homepage ("£1 for 6 weeks") vs /pricing ("50% off first 8 weeks")
+lead-offer inconsistency is still unresolved (flagged 13 Aug 2026), so the
+Discount/Duration columns for Big Top still show fixed placeholder copy
+rather than parsing per-size promo text from the live scrape. Fixing that
+is a separate decision, not part of this hybrid-pricing change.
 """
 import csv, json, os, re
 from html import escape
@@ -25,6 +52,10 @@ os.makedirs(OUTDIR, exist_ok=True)
 # UK date (Actions runs UTC; BST is UTC+1 in summer — close enough for a date stamp)
 TODAY = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime('%Y-%m-%d')
 
+# Big Top hybrid guard: weekly rates outside this range are rejected as
+# mis-parses (e.g. a "£1" promo-banner fragment), never written to history.
+BIGTOP_MIN_PW, BIGTOP_MAX_PW = 5.0, 600.0
+
 # (competitor key, display name, footnote mark, dark colour, light band colour)
 GROUPS = [
     ('Big Top (own)', 'Big Top', '', '#1F3864', '#DCE3F0'),
@@ -37,6 +68,7 @@ PRICE_METRICS = {'unit', 'featured_unit', 'from_price', 'quote_after_test_form',
                  'quote_step_price', 'manual_quote', 'ratecard'}
 HEADER = ['date', 'competitor', 'metric', 'size_sqft', 'rack_rate_pw_gbp',
           'offer_rate_pw_gbp', 'promo_text', 'source_url', 'notes']
+AUTOMATED_COMPETITORS = ('Shurgard Basildon', 'Make Space (Billericay)', 'Big Top (own)')
 
 
 def read_hist():
@@ -46,13 +78,25 @@ def read_hist():
         return list(csv.DictReader(f))
 
 
+def _to_weekly(value, per_unit):
+    """Normalise a scraped price to a weekly £ figure. per_unit is whatever
+    scrape.js recorded in the observation's 'per' field (usually 'week', but
+    the Big Top site has shown monthly figures elsewhere e.g. the £35/month
+    student rate captured 13 Aug 2026 as ~£8.08/wk using the same x12/52)."""
+    p = (per_unit or '').lower()
+    is_monthly = 'month' in p or p in ('mo', '/mo', 'pm')
+    return round(value * 12 / 52, 2) if is_monthly else round(value, 2)
+
+
 def append_today():
-    """Append today's Shurgard + Make Space observations from the sweep."""
+    """Append today's Shurgard + Make Space + Big Top (hybrid) observations."""
     if not os.path.exists(LATEST):
         return 0, 'sweep file missing'
     data = json.load(open(LATEST))
     obs = data.get('observations', [])
     rows = []
+    bigtop_best = {}  # size_int -> (weekly_offer, weekly_rack_or_None, promo, source)
+    bigtop_rejected = []  # sizes seen but rejected by the sanity guard, for the log line
     for o in obs:
         comp = o.get('competitor', '')
         size = o.get('size_sqft')
@@ -67,6 +111,34 @@ def append_today():
             rows.append([TODAY, 'Make Space (Billericay)', 'quote_after_test_form', int(size),
                          o.get('rack_rate') or '', offer, o.get('promo') or '',
                          o.get('source') or '', 'daily Actions sweep'])
+        elif 'Big Top' in comp:
+            try:
+                offer_val = float(offer)
+            except (TypeError, ValueError):
+                continue
+            per_unit = o.get('per') or 'week'
+            weekly = _to_weekly(offer_val, per_unit)
+            if not (BIGTOP_MIN_PW <= weekly <= BIGTOP_MAX_PW):
+                bigtop_rejected.append((size, weekly))
+                continue  # sanity guard: falls back to last-known, same as a hidden size
+            rack_weekly = None
+            rack = o.get('rack_rate')
+            if rack not in (None, ''):
+                try:
+                    rack_weekly = _to_weekly(float(rack), per_unit)
+                except (TypeError, ValueError):
+                    rack_weekly = None
+            size_i = int(size)
+            # a size can appear more than once in one sweep (both /reserve and
+            # /pricing are scraped) — keep the lowest valid weekly figure, same
+            # tie-break load_grid() already uses elsewhere in this file.
+            cur = bigtop_best.get(size_i)
+            if cur is None or weekly < cur[0]:
+                bigtop_best[size_i] = (weekly, rack_weekly, o.get('promo') or '', o.get('source') or '')
+    for size_i, (weekly, rack_weekly, promo, source) in bigtop_best.items():
+        rows.append([TODAY, 'Big Top (own)', 'unit', size_i,
+                     rack_weekly if rack_weekly is not None else '', weekly, promo,
+                     source, 'daily Actions sweep (live site, hybrid v4)'])
     # don't double-append if today's rows already exist for that competitor
     existing = {(r['date'], r['competitor']) for r in read_hist()}
     new = [r for r in rows if (str(r[0]), r[1]) not in existing]
@@ -77,7 +149,10 @@ def append_today():
             if write_header:
                 w.writerow(HEADER)
             w.writerows(new)
-    return len(new), f'{len(new)} rows appended'
+    msg = f'{len(new)} rows appended'
+    if bigtop_rejected:
+        msg += f'; Big Top sanity guard rejected {len(bigtop_rejected)} size(s): {bigtop_rejected}'
+    return len(new), msg
 
 
 def load_grid():
@@ -128,23 +203,26 @@ def load_1yr():
 
 
 def detect_changes():
-    """Compare the two most recent dates of Shurgard/Make Space automated data."""
-    per = defaultdict(dict)  # date -> (comp,size) -> offer
-    dates = set()
+    """Compare each automated competitor's own two most recent dates
+    independently (NOT a single shared 'yesterday' across all three) — Big
+    Top can have gaps (e.g. nothing between the 15 Aug ratecard baseline and
+    the first hybrid-scrape row), and a shared-date comparison would compare
+    Big Top against a date it has no row on, silently reporting no change
+    even when the real gap (vs. its true last-known row) is large."""
+    per_comp = defaultdict(lambda: defaultdict(dict))  # comp -> date -> size -> offer
     for r in read_hist():
-        if r['competitor'] in ('Shurgard Basildon', 'Make Space (Billericay)') and r['size_sqft'] and r['offer_rate_pw_gbp']:
-            per[r['date']][(r['competitor'], float(r['size_sqft']))] = float(r['offer_rate_pw_gbp'])
-            dates.add(r['date'])
-    ds = sorted(dates)
-    if len(ds) < 2:
-        return []
-    today_d, prev_d = ds[-1], ds[-2]
+        if r['competitor'] in AUTOMATED_COMPETITORS and r['size_sqft'] and r['offer_rate_pw_gbp']:
+            per_comp[r['competitor']][r['date']][float(r['size_sqft'])] = float(r['offer_rate_pw_gbp'])
     changes = []
-    for k, v in per[today_d].items():
-        pv = per[prev_d].get(k)
-        if pv is not None and abs(pv - v) >= 0.01:
-            comp, size = k
-            changes.append(f'{comp} {int(size)} sq ft: £{pv:.2f} → £{v:.2f}')
+    for comp in AUTOMATED_COMPETITORS:
+        dates = sorted(per_comp[comp].keys())
+        if len(dates) < 2:
+            continue
+        today_d, prev_d = dates[-1], dates[-2]
+        for size, v in per_comp[comp][today_d].items():
+            pv = per_comp[comp][prev_d].get(size)
+            if pv is not None and abs(pv - v) >= 0.01:
+                changes.append(f'{comp} {int(size)} sq ft: £{pv:.2f} → £{v:.2f}')
     return changes
 
 
@@ -278,7 +356,7 @@ def main():
     if changes:
         summary = ['<b>Changes today:</b> ' + '; '.join(changes[:8]) + ('…' if len(changes) > 8 else '')]
     else:
-        summary = ['<b>No day-over-day price changes</b> in the automated sources (Shurgard, Make Space).']
+        summary = ['<b>No day-over-day price changes</b> in the automated sources (Shurgard, Make Space, Big Top).']
     # Shurgard promo-expiry watch
     for r in read_hist():
         if r['competitor'] == 'Shurgard Basildon' and 'ends 21/08/2026' in (r['notes'] + r['promo_text']):
@@ -290,7 +368,7 @@ def main():
         '*** Safestore: manual check; carried forward until refreshed.',
         '† Make Space (Billericay): swept daily; intro offers vary by unit — some sizes get no intro discount at all, so trust the per-size Discount cell, not a blanket headline.',
         '‡ Safestore 1yr columns: 12-month fixed-term manual quotes. "1yr promo" = intro weekly rate for the first 52 weeks; "1yr follow on rate" = ongoing discounted weekly rate. Carried forward until refreshed; blank where no 1-yr quote exists.',
-        'Big Top: authoritative rate card (weekly, inc VAT), shown under Standard; £1/wk for the first 6 weeks. A blank where a rival lists a price = that Big Top size is out of stock.',
+        'Big Top: hybrid (v4, 25 Aug 2026) — sizes currently listed on bigtopselfstorage.com update daily from the live site; sizes not shown (out of stock) keep their last-known rate (15 Aug 2026 rate card baseline). Weekly figures outside £5–£600 are rejected as mis-parses and fall back to last-known too. Homepage vs /pricing lead-offer wording still differs (£1/6wks vs 50% off/8wks, unresolved) so the Discount/Duration columns still show fixed £1/6-week copy pending that decision. If a known Storeganise rate change doesn’t show up here, the live site likely hasn’t been republished yet — check the site, don’t assume the sweep is wrong.',
     ]
     grid = load_grid()
     grid1 = load_1yr()
