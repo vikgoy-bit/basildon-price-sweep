@@ -27,7 +27,7 @@ St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
 0126 891 9015
 Office: closed now, open at 9.00
-Access: open until 21.00
+Access: closed now, open at 7.00
  
 All
 < 40 sq ft
@@ -79,7 +79,7 @@ FIRST MONTH'S RENT
 £16.62/week
 £8.31/week
  Special Price
-See all 14 units
+See all 15 units
 Why choose Shurgard
 
 Safe & secure
@@ -110,8 +110,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Mon
-7.00-21.00
 Tue
 7.00-21.00
 Wed
@@ -123,13 +121,13 @@ Fri
 Sat
 7.00-21.00
 Sun
+7.00-21.00
+Mon 31/08/2026
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Mon
-9.00-17.30
 Tue
 9.00-17.30
 Wed
@@ -142,11 +140,11 @@ Sat
 Closed
 Sun
 Closed
+Mon 31/08/2026
+9.00-15.00
 Phone hours
 For phone assistance
 0126 891 9015
-Mon
-8.00-20.00
 Tue
 8.00-20.00
 Wed
@@ -159,6 +157,8 @@ Sat
 9.00-18.00
 Sun
 9.00-18.00
+Mon
+8.00-20.00
 Self storage units in Basildon
 
 Welcome to Shurgard Basildon, your reliable source for self-storage solutions in the heart of Basildon.
@@ -239,6 +239,18 @@ true
  
 true
 4.9/5 - 238 reviews
+Dave Vallance
+Shurgard Basildon
+true
+ 
+true
+ 
+true
+ 
+true
+ 
+true
+Found Shurgard self storage Basildon easy to use and easy to book a unit on line and value for money nice clean unit with easy access and helpful staff
 Mitesh Ganatra
 Shurgard Basildon
 true
@@ -263,18 +275,6 @@ true
  
 true
 Really easy to rent a unit online and the whole process was quick and straightforward. I popped into reception afterwards and Sarah was very helpful, taking the time to explain how everything worked. Great service and good value for money.
-Daniel W
-Shurgard Basildon
-true
- 
-true
- 
-true
- 
-true
- 
-true
-Poped in to shurgard for some prices..was shown around with a polite guy really helpful very informative showed me some units..the place was very clean tidy and most of all secure ...Will definitely use shurgard for my storage.
 Read all reviews for Shurgard
 Other storage units near me
 Romford
