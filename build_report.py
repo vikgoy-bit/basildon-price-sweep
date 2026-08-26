@@ -46,6 +46,8 @@ from collections import defaultdict
 ROOT = os.path.dirname(os.path.abspath(__file__))
 HIST = os.path.join(ROOT, 'history.csv')
 LATEST = os.path.join(ROOT, 'data', 'latest.json')
+SAFESTORE_LATEST = os.path.join(ROOT, 'data', 'safestore-latest.json')
+STORAGEKING_LATEST = os.path.join(ROOT, 'data', 'storageking-latest.json')
 OUTDIR = os.path.join(ROOT, 'report')
 os.makedirs(OUTDIR, exist_ok=True)
 
@@ -68,7 +70,8 @@ PRICE_METRICS = {'unit', 'featured_unit', 'from_price', 'quote_after_test_form',
                  'quote_step_price', 'manual_quote', 'ratecard'}
 HEADER = ['date', 'competitor', 'metric', 'size_sqft', 'rack_rate_pw_gbp',
           'offer_rate_pw_gbp', 'promo_text', 'source_url', 'notes']
-AUTOMATED_COMPETITORS = ('Shurgard Basildon', 'Make Space (Billericay)', 'Big Top (own)')
+AUTOMATED_COMPETITORS = ('Shurgard Basildon', 'Make Space (Billericay)', 'Big Top (own)',
+                          'Storage King Basildon', 'Safestore Basildon')
 
 
 def read_hist():
@@ -155,6 +158,45 @@ def append_today():
     return len(new), msg
 
 
+def append_prebuilt(json_path, source_label):
+    """Append rows from a scraper that already emits the final history.csv
+    schema (competitor, metric, size_sqft, rack_rate, offer_rate, per, promo,
+    source, notes) -- used by safestore_scrape.py and storageking_scrape.py.
+    A missing file or empty observations list is not an error: the scraper
+    itself already decided (via its own safety valve) that today's fetch
+    wasn't trustworthy, and simply wrote no observations. Either way,
+    history.csv is left untouched for that competitor, so the grid falls
+    back to the last-known row -- never overwritten with a blank.
+    """
+    if not os.path.exists(json_path):
+        return 0, f'{source_label}: sweep file missing (scraper did not run or crashed before writing)'
+    data = json.load(open(json_path))
+    obs = data.get('observations', [])
+    warnings = data.get('warnings', [])
+    rows = []
+    for o in obs:
+        size = o.get('size_sqft')
+        offer = o.get('offer_rate')
+        if not size or offer in (None, ''):
+            continue
+        rows.append([TODAY, o.get('competitor', ''), o.get('metric', 'manual_quote'), int(size),
+                     o.get('rack_rate') or '', offer, o.get('promo') or '',
+                     o.get('source') or '', o.get('notes') or 'daily Actions sweep'])
+    existing = {(r['date'], r['competitor'], r['metric']) for r in read_hist()}
+    new = [r for r in rows if (str(r[0]), r[1], r[2]) not in existing]
+    if new:
+        write_header = not os.path.exists(HIST)
+        with open(HIST, 'a', newline='') as f:
+            w = csv.writer(f)
+            if write_header:
+                w.writerow(HEADER)
+            w.writerows(new)
+    msg = f'{source_label}: {len(new)} rows appended'
+    if warnings:
+        msg += f'; {len(warnings)} scraper warning(s): {warnings[:3]}'
+    return len(new), msg
+
+
 def load_grid():
     """size -> comp -> (offer, rack_or_None, promo_text) for the latest date."""
     latest = {}
@@ -208,21 +250,31 @@ def detect_changes():
     Top can have gaps (e.g. nothing between the 15 Aug ratecard baseline and
     the first hybrid-scrape row), and a shared-date comparison would compare
     Big Top against a date it has no row on, silently reporting no change
-    even when the real gap (vs. its true last-known row) is large."""
-    per_comp = defaultdict(lambda: defaultdict(dict))  # comp -> date -> size -> offer
+    even when the real gap (vs. its true last-known row) is large.
+
+    Keyed on (competitor, metric) rather than competitor alone: Safestore
+    carries both 'manual_quote' (3-month term) and 'manual_quote_1yr' (12-
+    month term) rows for the same size on the same date. Keying on
+    competitor+size alone would let one metric's price silently overwrite
+    the other in the per-date dict and report a false "price change" that's
+    actually just two different contract lengths.
+    """
+    per_comp = defaultdict(lambda: defaultdict(dict))  # (comp,metric) -> date -> size -> offer
     for r in read_hist():
         if r['competitor'] in AUTOMATED_COMPETITORS and r['size_sqft'] and r['offer_rate_pw_gbp']:
-            per_comp[r['competitor']][r['date']][float(r['size_sqft'])] = float(r['offer_rate_pw_gbp'])
+            key = (r['competitor'], r['metric'])
+            per_comp[key][r['date']][float(r['size_sqft'])] = float(r['offer_rate_pw_gbp'])
     changes = []
-    for comp in AUTOMATED_COMPETITORS:
-        dates = sorted(per_comp[comp].keys())
+    for (comp, metric), by_date in per_comp.items():
+        dates = sorted(by_date.keys())
         if len(dates) < 2:
             continue
         today_d, prev_d = dates[-1], dates[-2]
-        for size, v in per_comp[comp][today_d].items():
-            pv = per_comp[comp][prev_d].get(size)
+        label = comp if metric != 'manual_quote_1yr' else f'{comp} (1yr)'
+        for size, v in by_date[today_d].items():
+            pv = by_date[prev_d].get(size)
             if pv is not None and abs(pv - v) >= 0.01:
-                changes.append(f'{comp} {int(size)} sq ft: £{pv:.2f} → £{v:.2f}')
+                changes.append(f'{label} {int(size)} sq ft: £{pv:.2f} → £{v:.2f}')
     return changes
 
 
@@ -352,11 +404,14 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None):
 
 def main():
     n, msg = append_today()
+    n_ss, msg_ss = append_prebuilt(SAFESTORE_LATEST, 'Safestore')
+    n_sk, msg_sk = append_prebuilt(STORAGEKING_LATEST, 'Storage King')
     changes = detect_changes()
     if changes:
         summary = ['<b>Changes today:</b> ' + '; '.join(changes[:8]) + ('…' if len(changes) > 8 else '')]
     else:
-        summary = ['<b>No day-over-day price changes</b> in the automated sources (Shurgard, Make Space, Big Top).']
+        summary = ['<b>No day-over-day price changes</b> in the automated sources '
+                   '(Shurgard, Storage King, Safestore, Make Space, Big Top).']
     # Shurgard promo-expiry watch
     for r in read_hist():
         if r['competitor'] == 'Shurgard Basildon' and 'ends 21/08/2026' in (r['notes'] + r['promo_text']):
@@ -364,10 +419,10 @@ def main():
             break
     footnotes = [
         '* Shurgard: swept daily; Discount/Duration parsed from the live web promo.',
-        '** Storage King: manual check; carried forward until refreshed.',
-        '*** Safestore: manual check; carried forward until refreshed.',
+        '** Storage King: swept daily as of 2026-08-26 (stealth Chromium, passes a one-time Cloudflare Turnstile checkbox — no CAPTCHA-solving). If a run is blocked or returns too few sizes to trust, the row is skipped and the last-known price carries forward instead.',
+        '*** Safestore: swept daily as of 2026-08-26 via the full quote wizard with a marked test identity (stealth Chromium; robots.txt disallows these pages — an explicit, informed policy decision, see README). If every size comes back "call store" in one run (a block/rate-limit signature), that run is discarded and the last-known price carries forward instead.',
         '† Make Space (Billericay): swept daily; intro offers vary by unit — some sizes get no intro discount at all, so trust the per-size Discount cell, not a blanket headline.',
-        '‡ Safestore 1yr columns: 12-month fixed-term manual quotes. "1yr promo" = intro weekly rate for the first 52 weeks; "1yr follow on rate" = ongoing discounted weekly rate. Carried forward until refreshed; blank where no 1-yr quote exists.',
+        '‡ Safestore 1yr columns: 12-month fixed-term quotes, swept daily as of 2026-08-26. "1yr promo" = intro weekly rate for the first 52 weeks; "1yr follow on rate" = ongoing discounted weekly rate. Carried forward until refreshed; blank where no 1-yr quote exists.',
         'Big Top: hybrid (v4, 25 Aug 2026) — sizes currently listed on bigtopselfstorage.com update daily from the live site; sizes not shown (out of stock) keep their last-known rate (15 Aug 2026 rate card baseline). Weekly figures outside £5–£600 are rejected as mis-parses and fall back to last-known too. Homepage vs /pricing lead-offer wording still differs (£1/6wks vs 50% off/8wks, unresolved) so the Discount/Duration columns still show fixed £1/6-week copy pending that decision. If a known Storeganise rate change doesn’t show up here, the live site likely hasn’t been republished yet — check the site, don’t assume the sweep is wrong.',
     ]
     grid = load_grid()
@@ -375,7 +430,7 @@ def main():
     html = build_email(grid, summary, footnotes, grid1)
     open(os.path.join(OUTDIR, 'email.html'), 'w').write(html)
     open(os.path.join(OUTDIR, 'subject.txt'), 'w').write(f'Basildon competitor prices — {TODAY}')
-    print(f'{msg}; {len(changes)} changes; grid sizes={len(grid)}; 1yr sizes={len(grid1)}')
+    print(f'{msg}; {msg_ss}; {msg_sk}; {len(changes)} changes; grid sizes={len(grid)}; 1yr sizes={len(grid1)}')
 
 
 if __name__ == '__main__':
