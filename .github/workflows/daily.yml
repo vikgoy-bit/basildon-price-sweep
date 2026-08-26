@@ -11,12 +11,7 @@ permissions:
 jobs:
   report:
     runs-on: ubuntu-latest
-    # Worst-case budget: Node scraper (~23 min: Shurgard 3 + Make Space 17 +
-    # Big Top 3) + Storage King (15 min) + Safestore (45 min, the full
-    # quote-wizard sweep across every size for two contract lengths) +
-    # report/chart build (~2 min) = up to ~85 min. 110 gives headroom
-    # without being so long a genuinely hung step burns the whole day.
-    timeout-minutes: 110
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -33,45 +28,20 @@ jobs:
           npm install playwright@1
           npx playwright install --with-deps chromium
 
-      - name: Install Xvfb + patchright (Python, for Safestore/Storage King)
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y xvfb
-          pip install patchright
-          python3 -m patchright install chromium
-          python3 -m patchright install-deps chromium
-
       - name: Run sweep (Shurgard + Make Space + Big Top)
         run: node scrape.js
         continue-on-error: true   # a scrape hiccup must not block the report
 
-      - name: Run Storage King sweep
-        # Full page-load sweep is normally fast (~1-2 min); a generous
-        # timeout absorbs Cloudflare Turnstile retries without blocking
-        # the rest of the workflow if the site is unreachable.
-        timeout-minutes: 15
-        continue-on-error: true   # a scrape hiccup must not block the report
-        run: |
-          Xvfb :97 -screen 0 1280x900x24 -nolisten tcp &
-          sleep 2
-          export DISPLAY=:97
-          python3 storageking_scrape.py
-
-      - name: Run Safestore sweep
-        # Steps through the full quote wizard for every offered size, for
-        # both a 3-month and a 12-month term (~22 quote submissions). Each
-        # submission takes 30-60s including its own retries, so this can
-        # legitimately run 20-30 minutes -- budget accordingly rather than
-        # timing it out mid-sweep and losing a duration's worth of data.
-        timeout-minutes: 45
-        continue-on-error: true   # a scrape hiccup must not block the report
-        run: |
-          Xvfb :98 -screen 0 1280x900x24 -nolisten tcp &
-          sleep 2
-          export DISPLAY=:98
-          python3 safestore_scrape.py
-
       - name: Build report (append history + grid email)
+        # data/safestore-latest.json and data/storageking-latest.json are
+        # NOT produced here (see "Why Safestore/Storage King aren't
+        # scraped on GitHub Actions" in README.md — both are Cloudflare/
+        # reCAPTCHA-blocked from GitHub's runner IPs, confirmed
+        # 2026-08-26). They're pushed to this repo by a scraper running
+        # on infrastructure with a working IP, on its own schedule
+        # (Mon/Wed/Fri). build_report.py reads whatever is already
+        # committed at that path -- if it's stale, the grid just shows
+        # last-known prices, same as any other missing/failed source.
         run: python3 build_report.py
 
       - name: Build price chart
@@ -97,10 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-${{ github.run_number }}
-          path: |
-            data/debug/
-            data/safestore-latest.json
-            data/storageking-latest.json
+          path: data/debug/
           retention-days: 14
 
       - name: Commit results
