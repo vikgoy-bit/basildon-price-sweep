@@ -1,0 +1,31 @@
+{
+  "observations": [],
+  "warnings": [
+    "Safestore 3months size 10: fetch failed after retries",
+    "Safestore 3months size 16: fetch failed after retries",
+    "Safestore 3months size 25: fetch failed after retries",
+    "Safestore 3months size 35: fetch failed after retries",
+    "Safestore 3months size 50: fetch failed after retries",
+    "Safestore 3months size 75: fetch failed after retries",
+    "Safestore 3months size 100: fetch failed after retries",
+    "Safestore 3months size 125: fetch failed after retries",
+    "Safestore 3months size 150: fetch failed after retries",
+    "Safestore 3months size 175: fetch failed after retries",
+    "Safestore 3months size 200: fetch failed after retries",
+    "Safestore 3months size 250: fetch failed after retries",
+    "Safestore 3months size 500: fetch failed after retries",
+    "Safestore 1year size 10: fetch failed after retries",
+    "Safestore 1year size 16: fetch failed after retries",
+    "Safestore 1year size 25: fetch failed after retries",
+    "Safestore 1year size 35: fetch failed after retries",
+    "Safestore 1year size 50: fetch failed after retries",
+    "Safestore 1year size 75: fetch failed after retries",
+    "Safestore 1year size 100: fetch failed after retries",
+    "Safestore 1year size 125: fetch failed after retries",
+    "Safestore 1year size 150: fetch failed after retries",
+    "Safestore 1year size 175: fetch failed after retries",
+    "Safestore 1year size 200: fetch failed after retries",
+    "Safestore 1year size 250: fetch failed after retries",
+    "Safestore 1year size 500: fetch failed after retries"
+  ]
+}

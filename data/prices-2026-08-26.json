@@ -172,18 +172,6 @@
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
-      "size_sqft": 260,
-      "rack_rate": 98.77,
-      "offer_rate": 49.62,
-      "welcome_rate": 1,
-      "per": "week",
-      "promo": "£1 first month; special rate ends 27/08/2026",
-      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
-      "raw": "260 sq ft id=4356"
-    },
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
       "size_sqft": 75,
       "rack_rate": null,
       "offer_rate": 47.31,
@@ -570,7 +558,7 @@
     }
   ],
   "warnings": [
-    "Shurgard: API returned 15 units (full ladder).",
+    "Shurgard: API returned 14 units (full ladder).",
     "Make Space 15 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
     "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
     "Make Space 30 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
