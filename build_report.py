@@ -412,11 +412,35 @@ def main():
     else:
         summary = ['<b>No day-over-day price changes</b> in the automated sources '
                    '(Shurgard, Storage King, Safestore, Make Space, Big Top).']
-    # Shurgard promo-expiry watch
-    for r in read_hist():
-        if r['competitor'] == 'Shurgard Basildon' and 'ends 21/08/2026' in (r['notes'] + r['promo_text']):
-            summary.append('<b>Watch:</b> Shurgard special rates end 21 Aug 2026.')
-            break
+    # Shurgard promo-expiry watch: surface the CURRENT rolling special-rate
+    # end date, derived from today's/most-recent Shurgard row only -- not a
+    # hardcoded date. (Bug found 2026-08-27: this used to hardcode
+    # 'ends 21/08/2026' from the very first scrape on 2026-08-15. Shurgard's
+    # promo end date is a rolling ~1-week window that slides forward on the
+    # live site every few days -- it moved to 27/08/2026 by 2026-08-20 and
+    # kept rolling since, but the hardcoded string match kept matching
+    # against that one-time historical Aug 15 row forever, since old rows
+    # never leave history.csv. Result: the email kept saying "ends 21 Aug
+    # 2026" for a week after that date had passed and the site had moved on
+    # three times over. Fixed to read the most recent Shurgard row's own
+    # promo text and extract whatever date is actually there today.)
+    shurgard_rows = [r for r in read_hist() if r['competitor'] == 'Shurgard Basildon']
+    if shurgard_rows:
+        latest_shurgard_date = max(r['date'] for r in shurgard_rows)
+        latest_texts = ' '.join(
+            r['notes'] + ' ' + r['promo_text']
+            for r in shurgard_rows if r['date'] == latest_shurgard_date
+        )
+        m = re.search(r'ends (\d{2})/(\d{2})/(\d{4})', latest_texts)
+        if m:
+            dd, mm, yyyy = m.groups()
+            try:
+                month_name = datetime(int(yyyy), int(mm), int(dd)).strftime('%-d %b %Y')
+            except ValueError:
+                month_name = f'{dd}/{mm}/{yyyy}'
+            summary.append(f'<b>Watch:</b> Shurgard special rates end {month_name} '
+                            f'(per {latest_shurgard_date}\'s sweep -- this is a rolling '
+                            f'promo window, check it hasn\'t moved again before relying on it).')
     footnotes = [
         '* Shurgard: swept daily; Discount/Duration parsed from the live web promo.',
         '** Storage King: swept daily as of 2026-08-26 (stealth Chromium, passes a one-time Cloudflare Turnstile checkbox — no CAPTCHA-solving). If a run is blocked or returns too few sizes to trust, the row is skipped and the last-known price carries forward instead.',
