@@ -2,7 +2,15 @@ name: Daily price report
 
 on:
   schedule:
-    - cron: "30 5 * * *"   # 06:30 UK (BST) — sweep, build report, email
+    # 05:37 UTC (06:37 UK/BST) daily. Deliberately NOT on the hour or
+    # half-hour: GitHub's scheduled-workflow queue is heavily contended at
+    # those exact marks (every repo in the world tends to schedule there),
+    # which increases the odds of a delayed or silently dropped run.
+    # Confirmed 2026-08-27: the previous "30 5 * * *" slot was skipped
+    # entirely for a full day (no run, no queued attempt, nothing) with
+    # no config/billing/repo-state issue found -- see the watchdog job
+    # below, which force-triggers a run if this ever happens again.
+    - cron: "37 5 * * *"
   workflow_dispatch: {}     # manual "Run workflow" button
 
 permissions:
