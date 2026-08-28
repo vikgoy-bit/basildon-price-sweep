@@ -26,7 +26,7 @@ true
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
 0126 891 9015
-Office: closed now
+Office: open until 17.30
 Access: open until 21.00
  
 All
@@ -43,18 +43,18 @@ For a 3 bedroom house or larger
 DISPLAY BY
 sq ft
 m²
-75 sq ft
-£1
-FIRST MONTH'S RENT
-£46.15/week
-£23.31/week
- Special Price
-Most popular
 35 sq ft
 £1
 FIRST MONTH'S RENT
 £27.23/week
 £13.62/week
+ Special Price
+Most popular
+75 sq ft
+£1
+FIRST MONTH'S RENT
+£46.15/week
+£23.31/week
  Special Price
 Most popular
 50 sq ft
@@ -110,8 +110,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Thu
-7.00-21.00
 Fri
 7.00-21.00
 Sat
@@ -123,13 +121,13 @@ Mon 31/08/2026
 Tue
 7.00-21.00
 Wed
+7.00-21.00
+Thu
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Thu
-9.00-17.30
 Fri
 9.00-17.30
 Sat
@@ -137,16 +135,16 @@ Closed
 Sun
 Closed
 Mon 31/08/2026
-9.00-15.00
+10.00-15.00
 Tue
 9.00-17.30
 Wed
 9.00-17.30
+Thu
+9.00-17.30
 Phone hours
 For phone assistance
 0126 891 9015
-Thu
-8.00-20.00
 Fri
 8.00-20.00
 Sat
@@ -158,6 +156,8 @@ Mon
 Tue
 8.00-20.00
 Wed
+8.00-20.00
+Thu
 8.00-20.00
 Self storage units in Basildon
 
