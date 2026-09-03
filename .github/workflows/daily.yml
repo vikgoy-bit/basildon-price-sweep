@@ -2,12 +2,16 @@ name: Daily price report
 
 on:
   # No "schedule:" trigger -- GitHub's own cron proved unreliable for this
-  # workflow (confirmed missed entirely, no run at all, on 2026-08-27 and
-  # 2026-08-29; also a separate earlier Gmail SMTP auth issue 2026-08-17
-  # to 2026-08-20, already fixed and unrelated to this). Rather than keep
-  # patching around a GitHub feature whose failures leave no diagnostic
-  # trail (nothing appears in the Actions history when it silently doesn't
-  # fire), the daily trigger moved OFF GitHub entirely on 2026-08-29:
+  # workflow. First diagnosis (2026-08-27/29): confirmed missed entirely,
+  # no run at all, on 2026-08-27 and 2026-08-29 (separate from an earlier
+  # Gmail SMTP auth issue 2026-08-17 to 2026-08-20, already fixed and
+  # unrelated). Re-checked before finalizing this fix (2026-09-03) and
+  # found the schedule had actually fired every day since 2026-08-29 --
+  # just consistently 2-6h late (07:00-11:49 UTC instead of the intended
+  # 05:37 UTC), every single day. Rather than keep tuning thresholds
+  # around a best-effort GitHub feature with no diagnostic visibility when
+  # it's slow or silently skips, the daily trigger moved OFF GitHub
+  # entirely on 2026-09-03:
   #   - PRIMARY: a Hermes cron job runs
   #     ~/.hermes/scripts/trigger-basildon-daily-report.sh once a day,
   #     which calls workflow_dispatch on this workflow directly.
