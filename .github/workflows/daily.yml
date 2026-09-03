@@ -1,17 +1,23 @@
 name: Daily price report
 
 on:
-  schedule:
-    # 05:37 UTC (06:37 UK/BST) daily. Deliberately NOT on the hour or
-    # half-hour: GitHub's scheduled-workflow queue is heavily contended at
-    # those exact marks (every repo in the world tends to schedule there),
-    # which increases the odds of a delayed or silently dropped run.
-    # Confirmed 2026-08-27: the previous "30 5 * * *" slot was skipped
-    # entirely for a full day (no run, no queued attempt, nothing) with
-    # no config/billing/repo-state issue found -- see the watchdog job
-    # below, which force-triggers a run if this ever happens again.
-    - cron: "37 5 * * *"
-  workflow_dispatch: {}     # manual "Run workflow" button
+  # No "schedule:" trigger -- GitHub's own cron proved unreliable for this
+  # workflow (confirmed missed entirely, no run at all, on 2026-08-27 and
+  # 2026-08-29; also a separate earlier Gmail SMTP auth issue 2026-08-17
+  # to 2026-08-20, already fixed and unrelated to this). Rather than keep
+  # patching around a GitHub feature whose failures leave no diagnostic
+  # trail (nothing appears in the Actions history when it silently doesn't
+  # fire), the daily trigger moved OFF GitHub entirely on 2026-08-29:
+  #   - PRIMARY: a Hermes cron job runs
+  #     ~/.hermes/scripts/trigger-basildon-daily-report.sh once a day,
+  #     which calls workflow_dispatch on this workflow directly.
+  #   - SECONDARY (backstop): ~/.hermes/scripts/gh-actions-schedule-watchdog.sh
+  #     runs every 2h and force-triggers a run if NOTHING has run in >26h,
+  #     in case the primary trigger itself fails.
+  # workflow_dispatch is kept below so both of those (and manual "Run
+  # workflow" clicks) still work.
+  workflow_dispatch: {}     # manual "Run workflow" button, and the trigger
+                             # used by both Hermes-side scripts above
 
 permissions:
   contents: write
