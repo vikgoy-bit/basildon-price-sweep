@@ -337,7 +337,124 @@ def _yr_cells(y, base):
     return c1 + c2
 
 
-def build_email(grid, summary_lines, footnotes, grid1yr=None):
+def build_recommendations(grid):
+    """Compare Big Top's STANDARD (rack) rate against each rival's standard
+    rate, size by size, and suggest pricing moves.
+
+    Deliberately uses STANDARD rates, not the headline "Discounted" price:
+    the discounted/offer price is often a teaser (e.g. "£1 first month",
+    "50% off"), and comparing teaser depths across competitors who each run
+    very different promo structures isn't a meaningful like-for-like signal
+    for "should we change our price". The standard rate is what a customer
+    actually pays on an ongoing basis once any intro offer ends -- a much
+    fairer basis for a real pricing decision.
+
+    Two categories, both size-by-size:
+    - RAISE opportunity: Big Top's standard rate is comfortably below the
+      cheapest rival's standard rate (>= RAISE_THRESHOLD_PCT gap). Suggests
+      a new rate that still keeps Big Top the cheapest in the market (a
+      safety margin below the cheapest rival), not matching or exceeding it.
+    - AT-RISK: Big Top's standard rate is above the cheapest rival's by a
+      meaningful margin -- flagged as a competitive risk, not something to
+      act on blindly, but worth knowing.
+
+    Sizes with no rival data at all are skipped (nothing to compare
+    against). This is directional advice based on current scraped data,
+    not a pricing algorithm -- always sanity-check before acting, and note
+    a single day's rival price can itself be an intro/teaser rate for that
+    rival's own promo cycle, not necessarily their true steady-state rate.
+    """
+    RAISE_THRESHOLD_PCT = 8.0   # only flag if BT is at least this % below cheapest rival
+    RISK_THRESHOLD_PCT = 5.0    # only flag if BT is at least this % above cheapest rival
+    SAFETY_MARGIN_PCT = 5.0     # suggested new rate stays this % below cheapest rival
+
+    raise_ops = []
+    at_risk = []
+
+    for size in sorted(grid.keys()):
+        entries = grid[size]
+        bt_entry = entries.get('Big Top (own)')
+        if bt_entry is None:
+            continue
+        bt_offer, bt_rack, _ = bt_entry
+        bt_standard = bt_rack if bt_rack is not None else bt_offer
+
+        rival_standards = {}
+        for comp, (offer, rack, _) in entries.items():
+            if comp == 'Big Top (own)':
+                continue
+            rival_standards[comp] = rack if rack is not None else offer
+        if not rival_standards:
+            continue
+
+        cheapest_comp, cheapest_rate = min(rival_standards.items(), key=lambda kv: kv[1])
+        if cheapest_rate <= 0:
+            continue
+        gap_pct = (cheapest_rate - bt_standard) / cheapest_rate * 100
+
+        if gap_pct >= RAISE_THRESHOLD_PCT:
+            suggested = cheapest_rate * (1 - SAFETY_MARGIN_PCT / 100)
+            # round to nearest 50p, never suggest going down
+            suggested = max(bt_standard, round(suggested * 2) / 2)
+            raise_ops.append({
+                'size': int(size), 'current': bt_standard, 'cheapest_comp': cheapest_comp,
+                'cheapest_rate': cheapest_rate, 'gap_pct': gap_pct, 'suggested': suggested,
+            })
+        elif gap_pct <= -RISK_THRESHOLD_PCT:
+            at_risk.append({
+                'size': int(size), 'current': bt_standard, 'cheapest_comp': cheapest_comp,
+                'cheapest_rate': cheapest_rate, 'gap_pct': -gap_pct,
+            })
+
+    return raise_ops, at_risk
+
+
+def render_recommendations_html(raise_ops, at_risk):
+    if not raise_ops and not at_risk:
+        return ('<h3 style="margin:14px 0 4px;font-size:14px;">Recommended Changes</h3>'
+                '<p style="margin:3px 0;font-size:12px;color:#555;">No sizes currently clear the '
+                'threshold for a pricing recommendation either way.</p>')
+
+    parts = ['<h3 style="margin:14px 0 4px;font-size:14px;">Recommended Changes</h3>']
+    parts.append('<p style="margin:2px 0 8px;font-size:12px;color:#555;">Based on STANDARD '
+                 '(post-promo) rates, not headline discounted/teaser prices -- a fairer '
+                 'like-for-like comparison. Directional advice from current scraped data, '
+                 'not a pricing algorithm: sanity-check before acting, and remember a '
+                 "rival's rate shown here can itself be mid-promo.</p>")
+
+    if raise_ops:
+        parts.append('<p style="margin:6px 0 3px;font-size:13px;"><b>Consider raising:</b></p>')
+        parts.append('<ul style="margin:0 0 8px;padding-left:20px;font-size:12px;">')
+        for op in raise_ops:
+            parts.append(
+                '<li style="margin:2px 0;">%d sq ft: currently £%.2f/wk, %s%% below cheapest '
+                'rival (%s at £%.2f/wk) &mdash; room to raise toward ~£%.2f/wk and still be the '
+                'cheapest in the market.</li>' % (
+                    op['size'], op['current'], f"{op['gap_pct']:.0f}",
+                    escape(op['cheapest_comp'].replace(' Basildon', '').replace(' (Billericay)', '').replace(' (own)', '')),
+                    op['cheapest_rate'], op['suggested'],
+                )
+            )
+        parts.append('</ul>')
+
+    if at_risk:
+        parts.append('<p style="margin:6px 0 3px;font-size:13px;"><b>Priced above market (competitive risk):</b></p>')
+        parts.append('<ul style="margin:0 0 4px;padding-left:20px;font-size:12px;">')
+        for op in at_risk:
+            parts.append(
+                '<li style="margin:2px 0;">%d sq ft: currently £%.2f/wk, %s%% above cheapest '
+                'rival (%s at £%.2f/wk).</li>' % (
+                    op['size'], op['current'], f"{op['gap_pct']:.0f}",
+                    escape(op['cheapest_comp'].replace(' Basildon', '').replace(' (Billericay)', '').replace(' (own)', '')),
+                    op['cheapest_rate'],
+                )
+            )
+        parts.append('</ul>')
+
+    return ''.join(parts)
+
+
+def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_html=''):
     grid1yr = grid1yr or {}
     sizes = sorted(set(grid.keys()) | set(grid1yr.keys()))
     h1 = ('<tr><th rowspan="2" style="padding:6px 8px;color:#1F3864;text-align:left;'
@@ -399,6 +516,7 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None):
 <table style="border-collapse:collapse;margin:10px 0;font-size:12px;">{h1}{h2}{rows}</table>
 <h3 style="margin:14px 0 4px;font-size:14px;">Comments</h3>
 {notes_html}
+{recommendations_html}
 </body></html>"""
 
 
@@ -451,10 +569,13 @@ def main():
     ]
     grid = load_grid()
     grid1 = load_1yr()
-    html = build_email(grid, summary, footnotes, grid1)
+    raise_ops, at_risk = build_recommendations(grid)
+    recommendations_html = render_recommendations_html(raise_ops, at_risk)
+    html = build_email(grid, summary, footnotes, grid1, recommendations_html)
     open(os.path.join(OUTDIR, 'email.html'), 'w').write(html)
     open(os.path.join(OUTDIR, 'subject.txt'), 'w').write(f'Basildon competitor prices — {TODAY}')
-    print(f'{msg}; {msg_ss}; {msg_sk}; {len(changes)} changes; grid sizes={len(grid)}; 1yr sizes={len(grid1)}')
+    print(f'{msg}; {msg_ss}; {msg_sk}; {len(changes)} changes; grid sizes={len(grid)}; '
+          f'1yr sizes={len(grid1)}; recommendations: {len(raise_ops)} raise, {len(at_risk)} at-risk')
 
 
 if __name__ == '__main__':
