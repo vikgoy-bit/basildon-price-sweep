@@ -1,9 +1,9 @@
 {
   "observations": [],
   "warnings": [
-    "Safestore 3months size 10: fetch failed after retries",
-    "Safestore 3months size 16: fetch failed after retries",
-    "Safestore 3months size 25: fetch failed after retries",
+    "Safestore 3months size 10: Safestore server error (HTTP 500) on submission -- not a block, a fault on their end",
+    "Safestore 3months size 16: Safestore server error (HTTP 500) on submission -- not a block, a fault on their end",
+    "Safestore 3months size 25: Safestore server error (HTTP 500) on submission -- not a block, a fault on their end",
     "Safestore 3months size 35: fetch failed after retries",
     "Safestore 3months size 50: fetch failed after retries",
     "Safestore 3months size 75: fetch failed after retries",
