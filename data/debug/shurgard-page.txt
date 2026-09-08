@@ -51,7 +51,7 @@ FIRST MONTH'S RENT
  Special Price
 Most popular
 75 sq ft
-£1
+50%
 FIRST MONTH'S RENT
 £47.31/week
 £23.77/week
@@ -110,8 +110,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Mon
-7.00-21.00
 Tue
 7.00-21.00
 Wed
@@ -123,13 +121,13 @@ Fri
 Sat
 7.00-21.00
 Sun
+7.00-21.00
+Mon
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Mon
-9.00-17.30
 Tue
 9.00-17.30
 Wed
@@ -142,11 +140,11 @@ Sat
 Closed
 Sun
 Closed
+Mon
+9.00-17.30
 Phone hours
 For phone assistance
 0126 891 9015
-Mon
-8.00-20.00
 Tue
 8.00-20.00
 Wed
@@ -159,6 +157,8 @@ Sat
 9.00-18.00
 Sun
 9.00-18.00
+Mon
+8.00-20.00
 Self storage units in Basildon
 
 Welcome to Shurgard Basildon, your reliable source for self-storage solutions in the heart of Basildon.
@@ -238,7 +238,31 @@ true
 true
  
 true
-4.9/5 - 248 reviews
+4.9/5 - 251 reviews
+Louise Horsfall
+Shurgard Basildon
+true
+ 
+true
+ 
+true
+ 
+true
+ 
+true
+Staff were extremely helpful and friendly. They showed us how the security and systems work and the types of locker available so we could make the right choice. Prices are competitive and there is good flexibility. Really pleased we found them.
+Paris
+Shurgard Basildon
+true
+ 
+true
+ 
+true
+ 
+true
+ 
+true
+Absolutely perfect!! Thankyou so much for the storage. Perfect thankyou Sarah and Robbie.
 Tom Herron
 Shurgard Basildon
 true
@@ -251,30 +275,6 @@ true
  
 true
 Fantastic service at Shurgard Self Storage. Prices are much lower than all the local competition and Sarah was so friendly and helpful today with all my queries even though she was juggling a number of customers. Happy to have chosen them to look after my belongings.
-Alfie Kamara
-Shurgard Basildon
-true
- 
-true
- 
-true
- 
-true
- 
-true
-The lady at the desk was Very efficient, helpful, welcoming and reassuring. Definitely gave me confidence that my belongings will be safe and happy to do business with them and highly recommend
-Tommy Smith
-Shurgard Basildon
-true
- 
-true
- 
-true
- 
-true
- 
-true
-I’ve Just been shown around the facility by Sarah and she was really helpful and answered all my queries. Great facility and competitive price.
 Read all reviews for Shurgard
 Other storage units near me
 Romford
