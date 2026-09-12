@@ -454,7 +454,59 @@ def render_recommendations_html(raise_ops, at_risk):
     return ''.join(parts)
 
 
-def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_html=''):
+def freshness_status():
+    """For each competitor (in GROUPS order), find the most recent date it
+    has ANY valid price row in history.csv, and whether that date is today.
+
+    Deliberately does NOT filter by PRICE_METRICS -- this should answer "did
+    we get real fresh data for this competitor today", regardless of which
+    metric it landed under (e.g. Safestore's manual_quote AND
+    manual_quote_1yr both count as evidence the scraper actually ran
+    successfully that day).
+
+    This is the freshness check Vikas asked for after the 2026-09 Storage
+    King/Safestore silent-staleness issue: those two are only refreshed by
+    a separate machine's Mon/Wed/Fri push (Storage King) and have been
+    broken more often than not (Safestore has had a genuine server-side
+    fault on Safestore's own site since 2026-08-26; Storage King has an
+    intermittent click-timeout). Without this note, a stale row re-read
+    into today's grid looks identical to a genuinely fresh one -- this
+    makes that distinction visible in the email itself instead of requiring
+    a manual history.csv check every time.
+    """
+    latest_date_by_comp = {}
+    for r in read_hist():
+        if not r['size_sqft'] or not r['offer_rate_pw_gbp']:
+            continue
+        comp = r['competitor']
+        d = r['date']
+        if comp not in latest_date_by_comp or d > latest_date_by_comp[comp]:
+            latest_date_by_comp[comp] = d
+    results = []
+    for comp, name, mark, dark, light in GROUPS:
+        last_date = latest_date_by_comp.get(comp)
+        is_fresh = (last_date == TODAY)
+        results.append({'name': name, 'last_date': last_date, 'is_fresh': is_fresh})
+    return results
+
+
+def render_freshness_html(freshness):
+    parts = ['<h3 style="margin:14px 0 4px;font-size:14px;">Scrape Freshness</h3>']
+    parts.append('<p style="margin:2px 0 6px;font-size:12px;color:#555;">Whether each '
+                 'competitor\'s price data in this email came from a real scrape today, '
+                 'or is being carried forward from an earlier date because today\'s scrape '
+                 'failed or wasn\'t run for that competitor.</p>')
+    parts.append('<ul style="margin:0 0 4px;padding-left:4px;font-size:12px;list-style:none;">')
+    for r in freshness:
+        icon = '\u2705' if r['is_fresh'] else '\u274c'
+        date_str = r['last_date'] if r['last_date'] else 'no data ever recorded'
+        status = 'fresh today' if r['is_fresh'] else f'stale, last fresh: {date_str}'
+        parts.append(f'<li style="margin:2px 0;">{icon} <b>{escape(r["name"])}</b> &mdash; {status}</li>')
+    parts.append('</ul>')
+    return ''.join(parts)
+
+
+def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_html='', freshness_html=''):
     grid1yr = grid1yr or {}
     sizes = sorted(set(grid.keys()) | set(grid1yr.keys()))
     h1 = ('<tr><th rowspan="2" style="padding:6px 8px;color:#1F3864;text-align:left;'
@@ -512,6 +564,7 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_ht
     return f"""<html><body style="font-family:Arial,sans-serif;color:#222;">
 <h2 style="margin:0 0 4px;">Basildon competitor prices &mdash; {TODAY}</h2>
 <p style="margin:2px 0 10px;font-size:13px;color:#555;">Weekly rates (&pound;, inc VAT). Discounted = current selling/web rate; Standard = rate after the promo ends; a single price under Standard means no separate discounted rate. Red = a rival selling rate below Big Top at that size. &mdash; = not available.</p>
+{freshness_html}
 {summary_html}
 <table style="border-collapse:collapse;margin:10px 0;font-size:12px;">{h1}{h2}{rows}</table>
 <h3 style="margin:14px 0 4px;font-size:14px;">Comments</h3>
@@ -571,11 +624,15 @@ def main():
     grid1 = load_1yr()
     raise_ops, at_risk = build_recommendations(grid)
     recommendations_html = render_recommendations_html(raise_ops, at_risk)
-    html = build_email(grid, summary, footnotes, grid1, recommendations_html)
+    freshness = freshness_status()
+    freshness_html = render_freshness_html(freshness)
+    html = build_email(grid, summary, footnotes, grid1, recommendations_html, freshness_html)
     open(os.path.join(OUTDIR, 'email.html'), 'w').write(html)
     open(os.path.join(OUTDIR, 'subject.txt'), 'w').write(f'Basildon competitor prices — {TODAY}')
+    stale = [f['name'] for f in freshness if not f['is_fresh']]
     print(f'{msg}; {msg_ss}; {msg_sk}; {len(changes)} changes; grid sizes={len(grid)}; '
-          f'1yr sizes={len(grid1)}; recommendations: {len(raise_ops)} raise, {len(at_risk)} at-risk')
+          f'1yr sizes={len(grid1)}; recommendations: {len(raise_ops)} raise, {len(at_risk)} at-risk; '
+          f'stale today: {stale if stale else "none"}')
 
 
 if __name__ == '__main__':
