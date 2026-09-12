@@ -142,9 +142,18 @@ def append_today():
         rows.append([TODAY, 'Big Top (own)', 'unit', size_i,
                      rack_weekly if rack_weekly is not None else '', weekly, promo,
                      source, 'daily Actions sweep (live site, hybrid v4)'])
-    # don't double-append if today's rows already exist for that competitor
-    existing = {(r['date'], r['competitor']) for r in read_hist()}
-    new = [r for r in rows if (str(r[0]), r[1]) not in existing]
+    # Only skip a row if an EXACT duplicate (same date, competitor, size,
+    # AND price) already exists today. Fixed 2026-09-12: this used to dedup
+    # on (date, competitor) alone, which silently discarded every re-scrape
+    # after the first one each day -- so a legitimate same-day price change
+    # (e.g. Big Top raising a rate mid-day) never made it into history.csv
+    # at all, even though the live site had already changed. Keying on the
+    # full (date, competitor, size, offer) tuple means a genuine price
+    # change still gets appended as a new row, while an identical re-run
+    # doesn't spam duplicate rows. load_grid()'s row-order tiebreak then
+    # picks whichever same-day row was scraped most recently.
+    existing = {(r['date'], r['competitor'], r['size_sqft'], r['offer_rate_pw_gbp']) for r in read_hist()}
+    new = [r for r in rows if (str(r[0]), r[1], str(r[3]), str(r[5])) not in existing]
     if new:
         write_header = not os.path.exists(HIST)
         with open(HIST, 'a', newline='') as f:
@@ -198,10 +207,26 @@ def append_prebuilt(json_path, source_label):
 
 
 def load_grid():
-    """size -> comp -> (offer, rack_or_None, promo_text) for the latest date."""
+    """size -> comp -> (offer, rack_or_None, promo_text) for the latest date.
+
+    Row-order tiebreak (fixed 2026-09-12): when a (competitor, size) has more
+    than one row on the SAME date -- e.g. Big Top's scraper checks both
+    /reserve and /pricing, or the workflow was manually re-triggered more
+    than once in a day -- keep whichever row was scraped MOST RECENTLY
+    (i.e. read later from history.csv, since rows are appended in scrape
+    order), not whichever happened to have the lower price.
+
+    This used to pick the lower price as tiebreak, which was silently wrong
+    the day Big Top's own price rose mid-day: a stale re-triggered scrape
+    from earlier that day (lower, pre-change price) beat the fresh one
+    (higher, correct, post-change price) purely because it was cheaper --
+    the exact opposite of what "latest" should mean. Real-world price CAN
+    go up, so "latest" must mean most-recently-observed, never
+    lowest-observed.
+    """
     latest = {}
     sticky_rack = {}  # (comp,size) -> most recent non-empty standard rate seen (any date)
-    for r in read_hist():
+    for idx, r in enumerate(read_hist()):
         if r['metric'] not in PRICE_METRICS or not r['size_sqft'] or not r['offer_rate_pw_gbp']:
             continue
         key = (r['competitor'], float(r['size_sqft']))
@@ -210,17 +235,15 @@ def load_grid():
         # (offer only) doesn't wipe the std value captured earlier.
         if rack is not None and (key not in sticky_rack or r['date'] >= sticky_rack[key][0]):
             sticky_rack[key] = (r['date'], rack)
-        val = (r['date'], float(r['offer_rate_pw_gbp']), rack, r['promo_text'] or '')
+        val = (r['date'], idx, float(r['offer_rate_pw_gbp']), rack, r['promo_text'] or '')
         cur = latest.get(key)
-        if cur is None or val[0] > cur[0] or (val[0] == cur[0] and val[1] < cur[1]):
+        if cur is None or val[0] > cur[0] or (val[0] == cur[0] and val[1] > cur[1]):
             latest[key] = val
     grid = defaultdict(dict)
-    for (comp, size), (_, price, rack, promo) in latest.items():
+    for (comp, size), (_, _, price, rack, promo) in latest.items():
         if rack is None and (comp, size) in sticky_rack:
             rack = sticky_rack[(comp, size)][1]  # inherit last known standard rate
-        cur = grid[size].get(comp)
-        if cur is None or price < cur[0]:
-            grid[size][comp] = (price, rack, promo)
+        grid[size][comp] = (price, rack, promo)
     return grid
 
 
