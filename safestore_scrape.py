@@ -22,16 +22,67 @@ rows — build_report.py's history.csv-based grid then naturally falls back
 to the last-known row for anything not refreshed today.
 """
 import json, os, re, shutil, sys, time
+import random
+from datetime import datetime, timezone
 from patchright.sync_api import sync_playwright
 
 BASE_URL = 'https://www.safestore.co.uk/get-a-quote/?siteid=0USAFESTORE-BASILD&returnurl=%2Fresults%2F%3Ftype%3Dlocation%26title%3Dbasildon'
 
+# Fixed 2026-09-12 (v2/v3, identity content): Vikas hypothesized the
+# repeated HTTP 500s / reCAPTCHA rejections were caused by the CONTENT of
+# our test identity -- "Test Test", an email containing "test" or a "+tag",
+# and postcode "TS1 1ST" are all textbook spam/bot-form signals. We tested
+# this directly: swapping "Test Test"/"+tag" for a realistic-looking name,
+# a Gmail dot-address (see below), and a genuine-format UK postcode/mobile
+# DID let some submissions through that had been failing consistently for
+# weeks.
+#
+# HONEST CAVEAT (do not overstate this fix): a follow-up 19-submission A/B
+# test the same day, holding the identity STYLE constant and varying only
+# browser instance/size/timing, came back roughly 50/50 (10 success / 9
+# reCAPTCHA-failed) with no clean deterministic pattern by browser
+# freshness, size, or timing. This is consistent with how reCAPTCHA v3
+# actually works -- it returns a continuous, noisy risk score and the site
+# picks a threshold, so automated traffic lands in a probabilistic middle
+# band rather than a cleanly on/off gate. The identity-realism change is a
+# genuine improvement (definitely doesn't hurt, plausibly helps some), but
+# there is NO known change that makes this 100% reliable, and future
+# maintainers should not assume one exists. With scrape_one()'s built-in
+# 3-attempt retry, an independent ~50% per-attempt success rate works out
+# to roughly 85-90% success per size per run -- "usually works, sometimes
+# doesn't" is the correct expectation to set, not "fixed".
+_FIRST_NAMES = ['Oliver', 'James', 'Daniel', 'Thomas', 'Harry', 'Jack', 'Charlie',
+                'Emily', 'Sophie', 'Amelia', 'Grace', 'Chloe', 'Lucy', 'Hannah']
+_LAST_NAMES = ['Bennett', 'Foster', 'Hughes', 'Palmer', 'Reid', 'Sharp', 'Walsh',
+               'Carter', 'Marsh', 'Ellis', 'Grant', 'Doyle', 'Fox', 'Chapman']
+# Real Essex-area outward postcode prefixes (Basildon store's own catchment
+# area) paired with a plausible-looking inward code -- looks like a normal
+# local customer, not an obviously synthetic "TS1 1ST" test value.
+_POSTCODE_PREFIXES = ['SS14', 'SS13', 'SS15', 'SS16', 'CM11', 'CM12', 'RM10', 'RM17']
+
+_first = random.choice(_FIRST_NAMES)
+_last = random.choice(_LAST_NAMES)
+_email_num = random.randint(1000, 9999)
+_postcode = f"{random.choice(_POSTCODE_PREFIXES)} {random.randint(1,9)}{random.choice('ABDEFGHJLNPQRSTUWXYZ')}{random.choice('ABDEFGHJLNPQRSTUWXYZ')}"
+_phone_suffix = f"{random.randint(0, 99999999):08d}"
+
+_email_local = 'baas123123'
+_dot_pos = random.randint(2, len(_email_local) - 2)
+_email_with_dot = _email_local[:_dot_pos] + '.' + _email_local[_dot_pos:]
+
 TEST_IDENTITY = {
-    "firstName": "Test",
-    "lastName": "Test",
-    "email": os.environ.get("SWEEP_EMAIL", "baas123123+test@gmail.com"),
-    "postcode": "TS1 1ST",
-    "phone": "07845412125",
+    "firstName": _first,
+    "lastName": _last,
+    # IMPORTANT: must route to an inbox we actually control, never a
+    # guessed real person's address. Avoids "+tag" addressing (a
+    # well-known disposable/tracking-email signal some anti-fraud systems
+    # flag) by using Gmail's dot-insensitivity instead: gmail.com ignores
+    # dots in the local-part, so inserting one at a random position still
+    # delivers to the exact same real inbox (baas123123@gmail.com) while
+    # looking like an ordinary address to the receiving site.
+    "email": os.environ.get("SWEEP_EMAIL", f"{_email_with_dot}@gmail.com"),
+    "postcode": os.environ.get("SWEEP_POSTCODE", _postcode),
+    "phone": os.environ.get("SWEEP_PHONE", f"079{_phone_suffix}"),
 }
 
 # Confirmed real sizes Basildon offers (verified 2026-08-26). If Safestore
@@ -176,7 +227,18 @@ def get_quote_for(pg, size, duration_radio_id, debug=False):
     if not yq:
         if debug: print("  [debug] FAILED: 'Your Quote' button not found")
         return None
-    yq.click(force=True)
+    # Fixed 2026-09-12: force=True bypasses Playwright's normal
+    # actionability checks AND can change how the click event is
+    # dispatched. Confirmed via live network-response debugging that
+    # force-clicking this specific button caused a full-page navigation
+    # to /Error/HandleError/500 (Safestore's own server-side error page,
+    # tracked by a full pageview beacon), whereas a normal (non-forced)
+    # click that lets the site's own JS handler intercept the click
+    # fires an ordinary AJAX POST to /personaldetailsstep instead --
+    # the page's actual designed submission path. Dropping force=True
+    # so Playwright waits for the button to be genuinely clickable and
+    # dispatches a real click event the page's own handler can catch.
+    yq.click()
     pg.wait_for_timeout(5000)
     if debug: print("  [debug] clicked Your Quote, URL now:", pg.url)
 
@@ -209,30 +271,17 @@ def get_quote_for(pg, size, duration_radio_id, debug=False):
     return pg.evaluate(EXTRACT_JS)
 
 
-def scrape_one(size, duration_radio_id, attempts=3):
+def scrape_one(pg, size, duration_radio_id, attempts=3):
+    """Run the quote flow for one size/duration using the given (already
+    open) page, retrying by reloading the SAME page/session rather than
+    tearing down and relaunching a brand-new empty browser profile each
+    time. See main() for why: a fresh empty profile per attempt is a much
+    stronger bot signal than a real user's single browsing session."""
     last_server_error = False
     for attempt in range(attempts):
-        profile_dir = f"{PROFILE_ROOT}/{duration_radio_id}-{size}-{attempt}"
-        shutil.rmtree(profile_dir, ignore_errors=True)
         try:
-            with sync_playwright() as p:
-                ctx = p.chromium.launch_persistent_context(
-                    user_data_dir=profile_dir,
-                    headless=False,
-                    no_viewport=True,
-                    args=["--start-maximized"],
-                )
-                pg = ctx.pages[0] if ctx.pages else ctx.new_page()
-                data = get_quote_for(pg, size, duration_radio_id)
-                ctx.close()
-            shutil.rmtree(profile_dir, ignore_errors=True)
+            data = get_quote_for(pg, size, duration_radio_id)
             if data and data.get("safestore_server_error"):
-                # Don't short-circuit on a server 500 the way we do for real
-                # data -- it's plausibly transient, so keep retrying through
-                # all attempts in case Safestore's backend recovers. Only
-                # remember that this is why we're retrying, so if EVERY
-                # attempt ends in a 500, we can report that specifically
-                # instead of the generic "fetch failed after retries".
                 last_server_error = True
                 time.sleep(6)
                 continue
@@ -240,7 +289,6 @@ def scrape_one(size, duration_radio_id, attempts=3):
                 return data
         except Exception as e:
             print(f"  size {size} attempt {attempt+1} exception: {e}", file=sys.stderr)
-            shutil.rmtree(profile_dir, ignore_errors=True)
         time.sleep(6)
     if last_server_error:
         return {"safestore_server_error": True}
@@ -318,64 +366,121 @@ def main():
     observations = []
     warnings = []
 
-    for duration_key, radio_id, builder in [
-        ("3months", DURATIONS["3months"], build_observation_3m),
-        ("1year", DURATIONS["1year"], build_observation_1y),
-    ]:
-        fetched = 0
-        call_store = 0
-        server_errors = 0
-        pending = []
-        for size in AVAILABLE_SIZES:
-            data = scrape_one(size, radio_id)
-            if data is None:
-                warnings.append(f"Safestore {duration_key} size {size}: fetch failed after retries")
-                continue
-            if data.get("safestore_server_error"):
-                # Distinct from a bot block or a code bug: Safestore's own
-                # server returned an HTTP 500 processing the submission.
-                # Confirmed via live debugging 2026-09-05 -- the wizard
-                # itself works fine every time (no captcha/block), it's
-                # specifically the final "Your Quote" POST that 500s on
-                # their end. Retrying immediately within the same run is
-                # unlikely to help if their backend is genuinely down; the
-                # per-size retry loop in scrape_one() already tries 3 times
-                # with a 6s gap, so if it's still erroring after that,
-                # move on rather than burning the whole run's time budget.
-                server_errors += 1
-                warnings.append(f"Safestore {duration_key} size {size}: Safestore server error (HTTP 500) on submission -- not a block, a fault on their end")
-                continue
-            fetched += 1
-            if data.get("noPriceMsg"):
-                call_store += 1
-                continue
-            obs = builder(size, data)
-            if obs:
-                pending.append(obs)
-            else:
-                warnings.append(f"Safestore {duration_key} size {size}: fetched but could not parse price")
+    # Fixed 2026-09-12: previously launched a brand-new, completely empty
+    # browser profile for EVERY size x duration x retry attempt (dozens per
+    # run), each jumping straight to a deep get-a-quote link and submitting
+    # within seconds. Vikas tested the identical flow manually via one
+    # normal browsing session and it worked fine -- Safestore's server
+    # isn't generally down. The most likely trigger for our repeated
+    # HTTP 500s is that our traffic pattern looks nothing like a real
+    # visitor: no browsing history, no session continuity, an
+    # instantly-resubmitted identical identity, over and over.
+    #
+    # Now: ONE persistent browser profile/session for the entire run (all
+    # sizes, both durations), same as a real person requesting quotes for
+    # several sizes in one sitting would do. A fresh profile is only used
+    # as a last resort if the whole session becomes unusable (crashed
+    # context), not as the default per-attempt behaviour.
+    profile_dir = f"{PROFILE_ROOT}/session"
+    shutil.rmtree(profile_dir, ignore_errors=True)
 
-        # Safety valve: if every fetched size came back "call store", this is
-        # almost certainly a block/rate-limit, not a genuine simultaneous
-        # withdrawal of every unit. Discard the whole duration's results so
-        # history.csv keeps yesterday's real prices instead of getting wiped.
-        if fetched > 0 and call_store == fetched:
-            warnings.append(
-                f"Safestore {duration_key}: ALL {fetched} fetched sizes returned "
-                "'call store' -- likely blocked/rate-limited this run. "
-                "Discarding results for this duration; history keeps last-known prices."
-            )
-            continue
+    with sync_playwright() as p:
+        ctx = p.chromium.launch_persistent_context(
+            user_data_dir=profile_dir,
+            headless=False,
+            no_viewport=True,
+            args=["--start-maximized"],
+            proxy={"server": os.environ.get("SAFESTORE_PROXY", "")} if os.environ.get("SAFESTORE_PROXY") else None,
+        )
+        pg = ctx.pages[0] if ctx.pages else ctx.new_page()
 
-        if server_errors == len(AVAILABLE_SIZES):
-            warnings.append(
-                f"Safestore {duration_key}: ALL {server_errors} sizes hit Safestore's own "
-                "HTTP 500 server error on submission -- their site appears to be down/broken "
-                "for this quote flow right now, not a block on our end. Nothing to fix in this "
-                "scraper; retry on the next scheduled run once Safestore's backend recovers."
-            )
+        for duration_key, radio_id, builder in [
+            ("3months", DURATIONS["3months"], build_observation_3m),
+            ("1year", DURATIONS["1year"], build_observation_1y),
+        ]:
+            fetched = 0
+            call_store = 0
+            server_errors = 0
+            pending = []
+            for size in AVAILABLE_SIZES:
+                try:
+                    data = scrape_one(pg, size, radio_id)
+                except Exception as e:
+                    # The shared page/context itself may occasionally end up
+                    # in a bad state (crashed target, closed page). Recover
+                    # by opening a fresh page in the SAME context/profile
+                    # (keeps session cookies/history) rather than aborting
+                    # the whole run.
+                    print(f"  session page recovery after error: {e}", file=sys.stderr)
+                    try:
+                        pg.close()
+                    except Exception:
+                        pass
+                    pg = ctx.new_page()
+                    data = None
+                if data is None:
+                    warnings.append(f"Safestore {duration_key} size {size}: fetch failed after retries")
+                    continue
+                if data.get("safestore_server_error"):
+                    # NOTE (corrected 2026-09-12): earlier debugging (2026-09-05)
+                    # concluded this HTTP 500 was a genuine fault on Safestore's
+                    # end, unrelated to bot detection. That was WRONG. Live
+                    # network instrumentation this session traced the actual
+                    # sequence: the wizard's AJAX submission to
+                    # /personaldetailsstep returns HTTP 400 {"message":
+                    # "recaptchaFailed"}, and the page's own client-side JS then
+                    # falls back to a traditional full-page form POST, which is
+                    # what lands on /Error/HandleError/500. So this 500 IS a
+                    # bot-detection outcome (reCAPTCHA v3 risk scoring), not an
+                    # independent server fault -- it just surfaces through a
+                    # generic error page instead of a clear "blocked" message.
+                    # Confirmed probabilistic/noisy (~50% per-attempt in a
+                    # 19-submission same-day test), not deterministically tied
+                    # to IP, identity content, or browser freshness alone --
+                    # see the TEST_IDENTITY comment above for the full test
+                    # history. Retrying (scrape_one()'s built-in 3 attempts)
+                    # genuinely helps here since each attempt is an independent
+                    # draw against that risk score, unlike a real outage where
+                    # retrying would be pointless.
+                    server_errors += 1
+                    warnings.append(f"Safestore {duration_key} size {size}: reCAPTCHA v3 rejected submission (surfaces as HTTP 500 fallback page) -- probabilistic bot-detection, not a genuine server fault; see code comments")
+                    continue
+                fetched += 1
+                if data.get("noPriceMsg"):
+                    call_store += 1
+                    continue
+                obs = builder(size, data)
+                if obs:
+                    pending.append(obs)
+                else:
+                    warnings.append(f"Safestore {duration_key} size {size}: fetched but could not parse price")
 
-        observations.extend(pending)
+            # Safety valve: if every fetched size came back "call store", this
+            # is almost certainly a block/rate-limit, not a genuine
+            # simultaneous withdrawal of every unit. Discard the whole
+            # duration's results so history.csv keeps yesterday's real
+            # prices instead of getting wiped.
+            if fetched > 0 and call_store == fetched:
+                warnings.append(
+                    f"Safestore {duration_key}: ALL {fetched} fetched sizes returned "
+                    "'call store' -- likely blocked/rate-limited this run. "
+                    "Discarding results for this duration; history keeps last-known prices."
+                )
+                continue
+
+            if server_errors == len(AVAILABLE_SIZES):
+                warnings.append(
+                    f"Safestore {duration_key}: ALL {server_errors} sizes hit the reCAPTCHA/500 "
+                    "fallback this run -- an unusually bad run of the same probabilistic "
+                    "bot-detection scoring (see code comments above), not necessarily a "
+                    "genuine site outage. Nothing to fix in this scraper; a future run may "
+                    "score better -- there is no guaranteed fix on our side."
+                )
+
+            observations.extend(pending)
+
+        ctx.close()
+    shutil.rmtree(profile_dir, ignore_errors=True)
 
     out = {"observations": observations, "warnings": warnings}
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")

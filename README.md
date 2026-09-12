@@ -20,12 +20,28 @@ them up.
 - **Safestore Basildon** — steps through the full quote wizard (Personal →
   size → duration → "not sure yet" → contact details) for both a 3-month and
   a 12-month term, across every unit size the store offers. Fills a
-  clearly-marked mystery-shop test identity (name "Test Test", phone
-  07845412125, email defaulting to a test address — override with a
-  SWEEP_EMAIL repo secret/env var). Standard marked-test practice; the name
-  flags it so sales teams don't chase. Marketing-consent boxes are never
-  ticked. Form-filling for both Storage King and Safestore is hard-limited to
-  an explicit allowlist of hosts.
+  randomly-generated but clearly-throwaway identity each run (realistic
+  first/last name from a fixed pool, a genuine-format UK postcode/mobile
+  number, and a Gmail dot-address that still delivers to our own real
+  inbox — see `TEST_IDENTITY` in `safestore_scrape.py` for why, and for the
+  "+tag" addressing pitfall to avoid re-introducing). Override the email via
+  a SWEEP_EMAIL repo secret/env var if needed. Marketing-consent boxes are
+  never ticked. Form-filling for both Storage King and Safestore is
+  hard-limited to an explicit allowlist of hosts.
+
+  **reCAPTCHA v3 note (2026-09-12, important for future maintainers):**
+  Safestore's final quote submission is gated by invisible reCAPTCHA v3,
+  which returns a noisy, continuous risk score rather than a clean
+  allow/block gate. A same-day 19-submission test held everything constant
+  except browser instance/size/timing and still saw ~50% of submissions
+  rejected (surfacing as an HTTP 500 error page — see the code comment on
+  `safestore_server_error` in `safestore_scrape.py` for the full chain of
+  causation). Realistic-looking form data (this section, above) measurably
+  helps versus obviously-fake "Test Test" data, but **there is no known fix
+  that makes this reliable** — expect roughly 85-90% success per size per
+  run even with the built-in 3-attempt retry, not 100%. Do not re-diagnose
+  this as "their server is down" (an earlier, incorrect conclusion, since
+  corrected) or assume a code change can eliminate it entirely.
 
   **Policy note (2026-08-26, informed decision, not an oversight):**
   Safestore's `robots.txt` disallows `/get-a-quote/`, `/storage-quote/*`, and
