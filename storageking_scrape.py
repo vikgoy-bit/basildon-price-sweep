@@ -39,7 +39,7 @@ EXTRACT_JS = """() => {
 }"""
 
 
-def scrape_all(attempts=3):
+def scrape_all(attempts=5):
     for attempt in range(attempts):
         profile_dir = f"{PROFILE_ROOT}/attempt-{attempt}"
         shutil.rmtree(profile_dir, ignore_errors=True)
@@ -53,27 +53,58 @@ def scrape_all(attempts=3):
                 )
                 pg = ctx.pages[0] if ctx.pages else ctx.new_page()
                 pg.goto(BASE_URL, timeout=60000)
-                pg.wait_for_timeout(2500)
+                pg.wait_for_timeout(2000)
 
+                # Fixed 2026-09-12 (same root cause as the Safestore fix a
+                # week earlier): the old code did a fixed 4s sleep after
+                # clicking the Cloudflare Turnstile checkbox, then blindly
+                # force-clicked the size label. Turnstile's challenge
+                # resolution time varies (sometimes well past 4s), so the
+                # size selector often hadn't rendered yet, and force=True
+                # suppressed Playwright's own actionability wait that would
+                # otherwise have caught this. Now: explicitly wait for the
+                # checkbox to be VISIBLE before clicking it (not just
+                # present), then wait for the size label to be visible
+                # before clicking -- no more force=True, no more fixed
+                # sleeps standing in for a real readiness check.
                 try:
                     frame = pg.frame_locator("iframe[src*='challenges.cloudflare.com']").first
-                    frame.locator("input[type=checkbox], .cb-lb, #challenge-stage").first.click(timeout=5000, force=True)
-                    pg.wait_for_timeout(4000)
+                    cb = frame.locator("input[type=checkbox], .cb-lb, #challenge-stage").first
+                    cb.wait_for(state="visible", timeout=10000)
+                    cb.click(timeout=5000)
+                    # After the Turnstile check resolves, Cloudflare often
+                    # reloads/replaces the page DOM before the real content
+                    # settles -- wait for network activity to quiet down
+                    # rather than a fixed sleep, so we don't click into a
+                    # page that's about to be swapped out from under us.
+                    pg.wait_for_load_state("networkidle", timeout=15000)
                 except Exception:
                     pass
 
                 try:
                     btn = pg.get_by_role("button", name=re.compile("accept", re.I))
-                    btn.first.click(timeout=5000, force=True)
+                    btn.first.click(timeout=5000)
                 except Exception:
                     pass
-                pg.wait_for_timeout(1000)
 
-                pg.click("label:has(#SizeId_50)", force=True)
-                pg.wait_for_timeout(800)
+                size_label = pg.locator("label:has(#SizeId_50)").first
+                size_label.wait_for(state="visible", timeout=20000)
+                # The size label can get detached-and-replaced once more
+                # right as the page finishes settling post-Cloudflare; a
+                # short retry loop absorbs that without a long fixed sleep.
+                for click_attempt in range(3):
+                    try:
+                        size_label.click(timeout=10000)
+                        break
+                    except Exception:
+                        if click_attempt == 2:
+                            raise
+                        pg.wait_for_timeout(1500)
+                        size_label = pg.locator("label:has(#SizeId_50)").first
                 btn = pg.get_by_role("button", name="Continue")
-                btn.first.click(force=True)
-                pg.wait_for_timeout(3000)
+                btn.first.wait_for(state="visible", timeout=10000)
+                btn.first.click()
+                pg.wait_for_timeout(2000)
 
                 data = pg.evaluate(EXTRACT_JS)
                 ctx.close()
