@@ -35,9 +35,9 @@
     }
   ],
   "warnings": [
-    "Safestore 3months size 35: fetch failed after retries",
-    "Safestore 3months size 50: fetch failed after retries",
-    "Safestore 3months size 75: fetch failed after retries",
-    "Safestore 3months size 100: fetch failed after retries"
+    "Safestore 3months size 125: fetch failed after retries",
+    "Safestore 3months size 150: fetch failed after retries",
+    "Safestore 3months size 175: fetch failed after retries",
+    "Safestore 3months size 200: fetch failed after retries"
   ]
 }
