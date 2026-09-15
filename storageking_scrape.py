@@ -62,21 +62,45 @@ def scrape_all(attempts=5):
                 # resolution time varies (sometimes well past 4s), so the
                 # size selector often hadn't rendered yet, and force=True
                 # suppressed Playwright's own actionability wait that would
-                # otherwise have caught this. Now: explicitly wait for the
-                # checkbox to be VISIBLE before clicking it (not just
-                # present), then wait for the size label to be visible
-                # before clicking -- no more force=True, no more fixed
-                # sleeps standing in for a real readiness check.
+                # otherwise have caught this.
+                #
+                # Fixed again 2026-09-15: the v2 fix above (wait for the
+                # checkbox to be visible, click it, then wait_for_load_state
+                # networkidle once) was STILL unreliable. Live debugging
+                # found TWO separate issues:
+                #
+                # 1) frame_locator().click() against this specific
+                #    Cloudflare checkbox is unreliable -- repeated live
+                #    tests showed a real mouse-coordinate click on the
+                #    checkbox's actual on-screen position resolves the
+                #    challenge consistently and near-instantly, while
+                #    frame_locator's own click() would sometimes leave the
+                #    page stuck on "Just a moment..." indefinitely. Now
+                #    dispatches a genuine OS-level mouse click at the
+                #    checkbox's bounding-box centre instead.
+                #
+                # 2) `networkidle` can report "quiet" while the page's
+                #    title is still literally "Just a moment..." --
+                #    Cloudflare sometimes does a slow follow-up
+                #    redirect/DOM-swap AFTER the network goes idle, not
+                #    tied to any network event we can wait on. Fixed by
+                #    polling the page's own <title> directly instead.
                 try:
                     frame = pg.frame_locator("iframe[src*='challenges.cloudflare.com']").first
                     cb = frame.locator("input[type=checkbox], .cb-lb, #challenge-stage").first
                     cb.wait_for(state="visible", timeout=10000)
-                    cb.click(timeout=5000)
-                    # After the Turnstile check resolves, Cloudflare often
-                    # reloads/replaces the page DOM before the real content
-                    # settles -- wait for network activity to quiet down
-                    # rather than a fixed sleep, so we don't click into a
-                    # page that's about to be swapped out from under us.
+                    box = cb.bounding_box()
+                    if box:
+                        pg.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+                    else:
+                        cb.click(timeout=5000)  # fallback if bounding_box fails
+                    for _ in range(20):  # up to ~20s, polling every 1s
+                        if "Just a moment" not in pg.title():
+                            break
+                        pg.wait_for_timeout(1000)
+                    # Even after the title clears, give the real page's own
+                    # JS a brief moment to finish rendering before we start
+                    # querying for elements on it.
                     pg.wait_for_load_state("networkidle", timeout=15000)
                 except Exception:
                     pass
@@ -87,20 +111,39 @@ def scrape_all(attempts=5):
                 except Exception:
                     pass
 
+                # Fixed 2026-09-15: Storage King's own backend intermittently
+                # serves a genuine "General Error" page for this URL (their
+                # own error copy: "We are working to resolve this issue...
+                # Please checkback later") -- confirmed via live screenshot,
+                # NOT a bot block or Cloudflare artifact. Without this
+                # check, the old code silently waited the full 20s for a
+                # size label that will never appear on an error page,
+                # burning time before the outer retry loop (attempts=5)
+                # kicks in. Detect it immediately and raise to retry with a
+                # fresh profile right away -- reloading the same error page
+                # often just serves the same error again, so a full fresh
+                # attempt is the right response, not a same-page reload.
+                if "General Error" in pg.title():
+                    raise RuntimeError("Storage King General Error page (their own backend fault, not a block) -- retrying with fresh profile")
+
                 size_label = pg.locator("label:has(#SizeId_50)").first
                 size_label.wait_for(state="visible", timeout=20000)
                 # The size label can get detached-and-replaced once more
                 # right as the page finishes settling post-Cloudflare; a
                 # short retry loop absorbs that without a long fixed sleep.
-                for click_attempt in range(3):
+                # Re-resolve the locator fresh each attempt (not just
+                # re-click the same stale handle) since the element may
+                # have been torn out and replaced by an equivalent one.
+                for click_attempt in range(4):
                     try:
-                        size_label.click(timeout=10000)
+                        size_label = pg.locator("label:has(#SizeId_50)").first
+                        size_label.wait_for(state="visible", timeout=8000)
+                        size_label.click(timeout=8000)
                         break
                     except Exception:
-                        if click_attempt == 2:
+                        if click_attempt == 3:
                             raise
                         pg.wait_for_timeout(1500)
-                        size_label = pg.locator("label:has(#SizeId_50)").first
                 btn = pg.get_by_role("button", name="Continue")
                 btn.first.wait_for(state="visible", timeout=10000)
                 btn.first.click()

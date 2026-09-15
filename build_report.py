@@ -480,6 +480,11 @@ def render_recommendations_html(raise_ops, at_risk):
 def freshness_status():
     """For each competitor (in GROUPS order), find the most recent date it
     has ANY valid price row in history.csv, and whether that date is today.
+    Also reports how many distinct sizes were actually refreshed today out
+    of how many sizes we've ever seen for that competitor (added 2026-09-15
+    per Vikas's request) -- "fresh" alone doesn't say whether TODAY's
+    refresh was a full sweep or just a couple of sizes that happened to get
+    through (e.g. Safestore's reCAPTCHA-gated flow can partially succeed).
 
     Deliberately does NOT filter by PRICE_METRICS -- this should answer "did
     we get real fresh data for this competitor today", regardless of which
@@ -498,18 +503,29 @@ def freshness_status():
     a manual history.csv check every time.
     """
     latest_date_by_comp = {}
+    sizes_seen_ever = {}  # comp -> set of sizes ever seen (any date)
+    sizes_seen_today = {}  # comp -> set of sizes seen today specifically
     for r in read_hist():
         if not r['size_sqft'] or not r['offer_rate_pw_gbp']:
             continue
         comp = r['competitor']
         d = r['date']
+        size = r['size_sqft']
         if comp not in latest_date_by_comp or d > latest_date_by_comp[comp]:
             latest_date_by_comp[comp] = d
+        sizes_seen_ever.setdefault(comp, set()).add(size)
+        if d == TODAY:
+            sizes_seen_today.setdefault(comp, set()).add(size)
     results = []
     for comp, name, mark, dark, light in GROUPS:
         last_date = latest_date_by_comp.get(comp)
         is_fresh = (last_date == TODAY)
-        results.append({'name': name, 'last_date': last_date, 'is_fresh': is_fresh})
+        total_sizes = len(sizes_seen_ever.get(comp, set()))
+        today_sizes = len(sizes_seen_today.get(comp, set()))
+        results.append({
+            'name': name, 'last_date': last_date, 'is_fresh': is_fresh,
+            'today_sizes': today_sizes, 'total_sizes': total_sizes,
+        })
     return results
 
 
@@ -523,7 +539,14 @@ def render_freshness_html(freshness):
     for r in freshness:
         icon = '\u2705' if r['is_fresh'] else '\u274c'
         date_str = r['last_date'] if r['last_date'] else 'no data ever recorded'
-        status = 'fresh today' if r['is_fresh'] else f'stale, last fresh: {date_str}'
+        if r['is_fresh']:
+            # Show how many of the known sizes actually came through today,
+            # not just that SOME data landed -- a partial refresh (e.g.
+            # Safestore reCAPTCHA-gated) still counts as "fresh" for the
+            # date check but is meaningfully incomplete.
+            status = f"fresh today ({r['today_sizes']}/{r['total_sizes']} sizes)"
+        else:
+            status = f'stale, last fresh: {date_str}'
         parts.append(f'<li style="margin:2px 0;">{icon} <b>{escape(r["name"])}</b> &mdash; {status}</li>')
     parts.append('</ul>')
     return ''.join(parts)

@@ -366,25 +366,50 @@ def main():
     observations = []
     warnings = []
 
-    # Fixed 2026-09-12: previously launched a brand-new, completely empty
-    # browser profile for EVERY size x duration x retry attempt (dozens per
-    # run), each jumping straight to a deep get-a-quote link and submitting
-    # within seconds. Vikas tested the identical flow manually via one
-    # normal browsing session and it worked fine -- Safestore's server
-    # isn't generally down. The most likely trigger for our repeated
-    # HTTP 500s is that our traffic pattern looks nothing like a real
-    # visitor: no browsing history, no session continuity, an
-    # instantly-resubmitted identical identity, over and over.
+    # Fixed 2026-09-14 (v4): the v2/v3 "one session for the whole run" fix
+    # (below history, kept for context) was itself wrong in a different way.
+    # First real production run after it landed: sizes 10/16/25 (the FIRST
+    # three submissions of the run) succeeded, then all 23 remaining
+    # submissions in that same session failed. That's the reCAPTCHA-taint
+    # pattern from same-day testing playing out exactly as predicted -- a
+    # session's risk score degrades with repeated automated-looking
+    # submissions and doesn't recover within that session. No real visitor
+    # requests 26 quotes back-to-back in one sitting either, so "one huge
+    # session" was still an obvious bot pattern, just a different one.
     #
-    # Now: ONE persistent browser profile/session for the entire run (all
-    # sizes, both durations), same as a real person requesting quotes for
-    # several sizes in one sitting would do. A fresh profile is only used
-    # as a last resort if the whole session becomes unusable (crashed
-    # context), not as the default per-attempt behaviour.
-    profile_dir = f"{PROFILE_ROOT}/session"
-    shutil.rmtree(profile_dir, ignore_errors=True)
+    # Fix: cap how much taint any single browser session accumulates by
+    # relaunching a FRESH context every BATCH_SIZE submissions (not every
+    # single one -- that was the pre-2026-09-12 behaviour and looked even
+    # more bot-like: zero browsing continuity, deep-link straight to
+    # get-a-quote, submit, repeat). A handful of quotes per session is a
+    # closer approximation of a real visitor comparing a few unit sizes in
+    # one sitting.
+    #
+    # (v2/v3 history, 2026-09-12): originally a brand-new, completely empty
+    # profile was launched for EVERY size x duration x retry attempt.
+    # Switched to one shared session for the whole run, which improved
+    # some things (removed force=True elsewhere, realistic identity) but
+    # this specific "one huge session" design choice underperformed in
+    # production -- see note above. BATCH_SIZE is the actual fix for that.
+    BATCH_SIZE = 4
 
-    with sync_playwright() as p:
+    work_items = []
+    for duration_key, radio_id, builder in [
+        ("3months", DURATIONS["3months"], build_observation_3m),
+        ("1year", DURATIONS["1year"], build_observation_1y),
+    ]:
+        for size in AVAILABLE_SIZES:
+            work_items.append((duration_key, radio_id, builder, size))
+
+    # Per-duration counters for the existing safety-valve logic below.
+    per_duration = {
+        "3months": {"fetched": 0, "call_store": 0, "server_errors": 0, "pending": []},
+        "1year": {"fetched": 0, "call_store": 0, "server_errors": 0, "pending": []},
+    }
+
+    def new_session(p):
+        profile_dir = f"{PROFILE_ROOT}/session-{int(time.time()*1000)}"
+        shutil.rmtree(profile_dir, ignore_errors=True)
         ctx = p.chromium.launch_persistent_context(
             user_data_dir=profile_dir,
             headless=False,
@@ -393,94 +418,107 @@ def main():
             proxy={"server": os.environ.get("SAFESTORE_PROXY", "")} if os.environ.get("SAFESTORE_PROXY") else None,
         )
         pg = ctx.pages[0] if ctx.pages else ctx.new_page()
+        return profile_dir, ctx, pg
 
-        for duration_key, radio_id, builder in [
-            ("3months", DURATIONS["3months"], build_observation_3m),
-            ("1year", DURATIONS["1year"], build_observation_1y),
-        ]:
-            fetched = 0
-            call_store = 0
-            server_errors = 0
-            pending = []
-            for size in AVAILABLE_SIZES:
+    with sync_playwright() as p:
+        profile_dir, ctx, pg = new_session(p)
+
+        for i, (duration_key, radio_id, builder, size) in enumerate(work_items):
+            if i > 0 and i % BATCH_SIZE == 0:
+                # Rotate to a fresh session/profile to cap accumulated taint.
                 try:
-                    data = scrape_one(pg, size, radio_id)
-                except Exception as e:
-                    # The shared page/context itself may occasionally end up
-                    # in a bad state (crashed target, closed page). Recover
-                    # by opening a fresh page in the SAME context/profile
-                    # (keeps session cookies/history) rather than aborting
-                    # the whole run.
-                    print(f"  session page recovery after error: {e}", file=sys.stderr)
-                    try:
-                        pg.close()
-                    except Exception:
-                        pass
-                    pg = ctx.new_page()
-                    data = None
-                if data is None:
-                    warnings.append(f"Safestore {duration_key} size {size}: fetch failed after retries")
-                    continue
-                if data.get("safestore_server_error"):
-                    # NOTE (corrected 2026-09-12): earlier debugging (2026-09-05)
-                    # concluded this HTTP 500 was a genuine fault on Safestore's
-                    # end, unrelated to bot detection. That was WRONG. Live
-                    # network instrumentation this session traced the actual
-                    # sequence: the wizard's AJAX submission to
-                    # /personaldetailsstep returns HTTP 400 {"message":
-                    # "recaptchaFailed"}, and the page's own client-side JS then
-                    # falls back to a traditional full-page form POST, which is
-                    # what lands on /Error/HandleError/500. So this 500 IS a
-                    # bot-detection outcome (reCAPTCHA v3 risk scoring), not an
-                    # independent server fault -- it just surfaces through a
-                    # generic error page instead of a clear "blocked" message.
-                    # Confirmed probabilistic/noisy (~50% per-attempt in a
-                    # 19-submission same-day test), not deterministically tied
-                    # to IP, identity content, or browser freshness alone --
-                    # see the TEST_IDENTITY comment above for the full test
-                    # history. Retrying (scrape_one()'s built-in 3 attempts)
-                    # genuinely helps here since each attempt is an independent
-                    # draw against that risk score, unlike a real outage where
-                    # retrying would be pointless.
-                    server_errors += 1
-                    warnings.append(f"Safestore {duration_key} size {size}: reCAPTCHA v3 rejected submission (surfaces as HTTP 500 fallback page) -- probabilistic bot-detection, not a genuine server fault; see code comments")
-                    continue
-                fetched += 1
-                if data.get("noPriceMsg"):
-                    call_store += 1
-                    continue
-                obs = builder(size, data)
-                if obs:
-                    pending.append(obs)
-                else:
-                    warnings.append(f"Safestore {duration_key} size {size}: fetched but could not parse price")
+                    ctx.close()
+                except Exception:
+                    pass
+                shutil.rmtree(profile_dir, ignore_errors=True)
+                profile_dir, ctx, pg = new_session(p)
 
-            # Safety valve: if every fetched size came back "call store", this
-            # is almost certainly a block/rate-limit, not a genuine
-            # simultaneous withdrawal of every unit. Discard the whole
-            # duration's results so history.csv keeps yesterday's real
-            # prices instead of getting wiped.
-            if fetched > 0 and call_store == fetched:
-                warnings.append(
-                    f"Safestore {duration_key}: ALL {fetched} fetched sizes returned "
-                    "'call store' -- likely blocked/rate-limited this run. "
-                    "Discarding results for this duration; history keeps last-known prices."
-                )
+            try:
+                data = scrape_one(pg, size, radio_id)
+            except Exception as e:
+                # The shared page/context itself may occasionally end up
+                # in a bad state (crashed target, closed page). Recover
+                # by opening a fresh page in the SAME context/profile
+                # (keeps session cookies/history) rather than aborting
+                # the whole run.
+                print(f"  session page recovery after error: {e}", file=sys.stderr)
+                try:
+                    pg.close()
+                except Exception:
+                    pass
+                pg = ctx.new_page()
+                data = None
+
+            d = per_duration[duration_key]
+            if data is None:
+                warnings.append(f"Safestore {duration_key} size {size}: fetch failed after retries")
                 continue
+            if data.get("safestore_server_error"):
+                # NOTE (corrected 2026-09-12): earlier debugging (2026-09-05)
+                # concluded this HTTP 500 was a genuine fault on Safestore's
+                # end, unrelated to bot detection. That was WRONG. Live
+                # network instrumentation this session traced the actual
+                # sequence: the wizard's AJAX submission to
+                # /personaldetailsstep returns HTTP 400 {"message":
+                # "recaptchaFailed"}, and the page's own client-side JS then
+                # falls back to a traditional full-page form POST, which is
+                # what lands on /Error/HandleError/500. So this 500 IS a
+                # bot-detection outcome (reCAPTCHA v3 risk scoring), not an
+                # independent server fault -- it just surfaces through a
+                # generic error page instead of a clear "blocked" message.
+                # Confirmed probabilistic/noisy (~50% per-attempt in a
+                # 19-submission same-day test), not deterministically tied
+                # to IP, identity content, or browser freshness alone --
+                # see the TEST_IDENTITY comment above for the full test
+                # history. Retrying (scrape_one()'s built-in 3 attempts)
+                # genuinely helps here since each attempt is an independent
+                # draw against that risk score, unlike a real outage where
+                # retrying would be pointless.
+                d["server_errors"] += 1
+                warnings.append(f"Safestore {duration_key} size {size}: reCAPTCHA v3 rejected submission (surfaces as HTTP 500 fallback page) -- probabilistic bot-detection, not a genuine server fault; see code comments")
+                continue
+            d["fetched"] += 1
+            if data.get("noPriceMsg"):
+                d["call_store"] += 1
+                continue
+            obs = builder(size, data)
+            if obs:
+                d["pending"].append(obs)
+            else:
+                warnings.append(f"Safestore {duration_key} size {size}: fetched but could not parse price")
 
-            if server_errors == len(AVAILABLE_SIZES):
-                warnings.append(
-                    f"Safestore {duration_key}: ALL {server_errors} sizes hit the reCAPTCHA/500 "
-                    "fallback this run -- an unusually bad run of the same probabilistic "
-                    "bot-detection scoring (see code comments above), not necessarily a "
-                    "genuine site outage. Nothing to fix in this scraper; a future run may "
-                    "score better -- there is no guaranteed fix on our side."
-                )
+        try:
+            ctx.close()
+        except Exception:
+            pass
+        shutil.rmtree(profile_dir, ignore_errors=True)
 
-            observations.extend(pending)
+    for duration_key, d in per_duration.items():
+        fetched, call_store, server_errors, pending = d["fetched"], d["call_store"], d["server_errors"], d["pending"]
 
-        ctx.close()
-    shutil.rmtree(profile_dir, ignore_errors=True)
+        # Safety valve: if every fetched size came back "call store", this
+        # is almost certainly a block/rate-limit, not a genuine
+        # simultaneous withdrawal of every unit. Discard the whole
+        # duration's results so history.csv keeps yesterday's real
+        # prices instead of getting wiped.
+        if fetched > 0 and call_store == fetched:
+            warnings.append(
+                f"Safestore {duration_key}: ALL {fetched} fetched sizes returned "
+                "'call store' -- likely blocked/rate-limited this run. "
+                "Discarding results for this duration; history keeps last-known prices."
+            )
+            continue
+
+        if server_errors == len(AVAILABLE_SIZES):
+            warnings.append(
+                f"Safestore {duration_key}: ALL {server_errors} sizes hit the reCAPTCHA/500 "
+                "fallback this run -- an unusually bad run of the same probabilistic "
+                "bot-detection scoring (see code comments above), not necessarily a "
+                "genuine site outage. Nothing to fix in this scraper; a future run may "
+                "score better -- there is no guaranteed fix on our side."
+            )
+
+        observations.extend(pending)
 
     out = {"observations": observations, "warnings": warnings}
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
