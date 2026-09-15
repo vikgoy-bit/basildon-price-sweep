@@ -35,8 +35,9 @@
     }
   ],
   "warnings": [
-    "Safestore 3months size 10: 'call store' returned -- not written (ambiguous: could be a real stock-out or a soft block)",
-    "Safestore 3months size 16: 'call store' returned -- not written (ambiguous: could be a real stock-out or a soft block)",
-    "Safestore 3months size 25: 'call store' returned -- not written (ambiguous: could be a real stock-out or a soft block)"
+    "Safestore 3months size 35: fetch failed after retries",
+    "Safestore 3months size 50: fetch failed after retries",
+    "Safestore 3months size 75: fetch failed after retries",
+    "Safestore 3months size 100: fetch failed after retries"
   ]
 }
