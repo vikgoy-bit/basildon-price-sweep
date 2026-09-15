@@ -362,6 +362,161 @@ def build_observation_1y(size, data):
     }
 
 
+TICK_PROGRESS_PATH = "/opt/data/profiles/alex/state/safestore-tick-progress.json"
+
+
+def _all_work_items():
+    items = []
+    for duration_key, radio_id, builder in [
+        ("3months", DURATIONS["3months"], build_observation_3m),
+        ("1year", DURATIONS["1year"], build_observation_1y),
+    ]:
+        for size in AVAILABLE_SIZES:
+            items.append((duration_key, radio_id, builder, size))
+    return items
+
+
+def _load_tick_progress():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if os.path.exists(TICK_PROGRESS_PATH):
+        with open(TICK_PROGRESS_PATH) as f:
+            state = json.load(f)
+        if state.get("date") == today:
+            return state
+    # New day (or no progress file yet) -- start fresh.
+    return {"date": today, "done": []}
+
+
+def _save_tick_progress(state):
+    os.makedirs(os.path.dirname(TICK_PROGRESS_PATH), exist_ok=True)
+    with open(TICK_PROGRESS_PATH, "w") as f:
+        json.dump(state, f, indent=2)
+
+
+def tick_main(count=3):
+    """Added 2026-09-15 per Vikas: instead of one big burst of 26
+    submissions in ~15 minutes (which the reCAPTCHA-taint testing that same
+    day showed is itself a big part of the problem -- no real visitor
+    requests 26 quotes back-to-back), spread the day's sweep across many
+    small hourly ticks that each submit only a couple of quotes, closer to
+    genuine organic traffic volume/pacing.
+
+    Each invocation submits up to `count` of the day's not-yet-done
+    (duration, size) work items (tracked in TICK_PROGRESS_PATH, which
+    resets automatically at UTC midnight), using ONE fresh browser session
+    for the whole tick (count is small enough that no BATCH_SIZE rotation
+    is needed within a single tick -- a handful of quotes in one sitting is
+    exactly what a real visitor comparing sizes would do).
+
+    Merges results into the EXISTING data/safestore-latest.json rather than
+    overwriting it (a full run's main() always overwrites the whole file --
+    that's correct there since it always covers everything in one go, but
+    would wipe earlier ticks' progress here). Once a day's 26 items are all
+    done, subsequent ticks that day are a fast no-op (checked before
+    launching any browser, so a "nothing to do" tick costs nothing).
+    """
+    progress = _load_tick_progress()
+    done_keys = set(progress["done"])
+    all_items = _all_work_items()
+    remaining = [item for item in all_items if f"{item[0]}:{item[3]}" not in done_keys]
+
+    if not remaining:
+        print(f"Safestore tick: today's full sweep ({len(all_items)} items) already complete -- nothing to do.")
+        return
+
+    batch = remaining[:count]
+    print(f"Safestore tick: {len(remaining)} items remaining today, attempting {len(batch)} this run.")
+
+    existing = {"observations": [], "warnings": []}
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    out_path = os.path.join(data_dir, "safestore-latest.json")
+    if os.path.exists(out_path):
+        try:
+            with open(out_path) as f:
+                existing = json.load(f)
+        except Exception:
+            pass
+    # Index existing observations by (metric, size) so we can replace only
+    # the ones this tick actually refreshes, keeping everything else from
+    # earlier ticks today untouched.
+    obs_by_key = {}
+    for obs in existing.get("observations", []):
+        obs_by_key[(obs.get("metric"), obs.get("size_sqft"))] = obs
+    metric_by_duration = {"3months": "manual_quote", "1year": "manual_quote_1yr"}
+
+    tick_warnings = []
+
+    with sync_playwright() as p:
+        profile_dir, ctx, pg = new_session(p)
+        try:
+            for duration_key, radio_id, builder, size in batch:
+                try:
+                    data = scrape_one(pg, size, radio_id)
+                except Exception as e:
+                    print(f"  session page recovery after error: {e}", file=sys.stderr)
+                    try:
+                        pg.close()
+                    except Exception:
+                        pass
+                    pg = ctx.new_page()
+                    data = None
+
+                key = (metric_by_duration[duration_key], size)
+                if data is None:
+                    tick_warnings.append(f"Safestore {duration_key} size {size}: fetch failed after retries")
+                    done_keys.add(f"{duration_key}:{size}")  # don't retry endlessly within today
+                    continue
+                if data.get("safestore_server_error"):
+                    tick_warnings.append(f"Safestore {duration_key} size {size}: reCAPTCHA v3 rejected submission (surfaces as HTTP 500 fallback page) -- probabilistic bot-detection, not a genuine server fault; see main()'s code comments")
+                    done_keys.add(f"{duration_key}:{size}")
+                    continue
+                if data.get("noPriceMsg"):
+                    tick_warnings.append(f"Safestore {duration_key} size {size}: 'call store' returned -- not written (ambiguous: could be a real stock-out or a soft block)")
+                    done_keys.add(f"{duration_key}:{size}")
+                    continue
+                obs = builder(size, data)
+                if obs:
+                    obs_by_key[key] = obs
+                    done_keys.add(f"{duration_key}:{size}")
+                else:
+                    tick_warnings.append(f"Safestore {duration_key} size {size}: fetched but could not parse price")
+                    done_keys.add(f"{duration_key}:{size}")
+        finally:
+            try:
+                ctx.close()
+            except Exception:
+                pass
+            shutil.rmtree(profile_dir, ignore_errors=True)
+
+    out = {"observations": list(obs_by_key.values()), "warnings": tick_warnings}
+    os.makedirs(data_dir, exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(out, f, indent=2, ensure_ascii=False)
+
+    progress["done"] = sorted(done_keys)
+    _save_tick_progress(progress)
+
+    total_done = len([k for k in done_keys])
+    print(f"Safestore tick complete: {total_done}/{len(all_items)} items done today so far "
+          f"({len(obs_by_key)} observations in latest.json). {len(tick_warnings)} warning(s) this tick.")
+    for w in tick_warnings:
+        print("WARN:", w)
+
+
+def new_session(p):
+    profile_dir = f"{PROFILE_ROOT}/session-{int(time.time()*1000)}"
+    shutil.rmtree(profile_dir, ignore_errors=True)
+    ctx = p.chromium.launch_persistent_context(
+        user_data_dir=profile_dir,
+        headless=False,
+        no_viewport=True,
+        args=["--start-maximized"],
+        proxy={"server": os.environ.get("SAFESTORE_PROXY", "")} if os.environ.get("SAFESTORE_PROXY") else None,
+    )
+    pg = ctx.pages[0] if ctx.pages else ctx.new_page()
+    return profile_dir, ctx, pg
+
+
 def main():
     observations = []
     warnings = []
@@ -406,19 +561,6 @@ def main():
         "3months": {"fetched": 0, "call_store": 0, "server_errors": 0, "pending": []},
         "1year": {"fetched": 0, "call_store": 0, "server_errors": 0, "pending": []},
     }
-
-    def new_session(p):
-        profile_dir = f"{PROFILE_ROOT}/session-{int(time.time()*1000)}"
-        shutil.rmtree(profile_dir, ignore_errors=True)
-        ctx = p.chromium.launch_persistent_context(
-            user_data_dir=profile_dir,
-            headless=False,
-            no_viewport=True,
-            args=["--start-maximized"],
-            proxy={"server": os.environ.get("SAFESTORE_PROXY", "")} if os.environ.get("SAFESTORE_PROXY") else None,
-        )
-        pg = ctx.pages[0] if ctx.pages else ctx.new_page()
-        return profile_dir, ctx, pg
 
     with sync_playwright() as p:
         profile_dir, ctx, pg = new_session(p)
@@ -533,4 +675,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # Added 2026-09-15: `--tick[=N]` runs tick_main() (a small hourly
+    # slice of the day's work, see its docstring) instead of the full
+    # main() sweep. Kept as an opt-in flag rather than the default so the
+    # existing Mon/Wed/Fri Hermes cron job (which expects one full run
+    # covering all 26 items) is completely unaffected.
+    if len(sys.argv) > 1 and sys.argv[1].startswith("--tick"):
+        n = 3
+        if "=" in sys.argv[1]:
+            n = int(sys.argv[1].split("=", 1)[1])
+        tick_main(count=n)
+    else:
+        main()
