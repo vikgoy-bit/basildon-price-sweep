@@ -176,6 +176,18 @@ def append_prebuilt(json_path, source_label):
     wasn't trustworthy, and simply wrote no observations. Either way,
     history.csv is left untouched for that competitor, so the grid falls
     back to the last-known row -- never overwritten with a blank.
+
+    Fixed 2026-09-16 (real bug found): this used to stamp EVERY row with
+    TODAY regardless of when the observation was actually captured. Both
+    scrapers intentionally carry forward a good observation across
+    runs/ticks that don't get a fresh price (safestore_scrape.py's
+    tick_main() explicitly merges into the existing file rather than
+    overwriting it) -- so re-reading the same carried-forward JSON on a
+    later day silently relabeled 2-day-old data as "fresh today", for
+    THREE consecutive days (2026-09-14 through -16) before being caught.
+    Now uses each observation's own "scraped_date" field (added the same
+    day) when present, falling back to TODAY only for older scraper
+    versions/observations that predate this field.
     """
     if not os.path.exists(json_path):
         return 0, f'{source_label}: sweep file missing (scraper did not run or crashed before writing)'
@@ -188,11 +200,21 @@ def append_prebuilt(json_path, source_label):
         offer = o.get('offer_rate')
         if not size or offer in (None, ''):
             continue
-        rows.append([TODAY, o.get('competitor', ''), o.get('metric', 'manual_quote'), int(size),
+        row_date = o.get('scraped_date') or TODAY
+        rows.append([row_date, o.get('competitor', ''), o.get('metric', 'manual_quote'), int(size),
                      o.get('rack_rate') or '', offer, o.get('promo') or '',
                      o.get('source') or '', o.get('notes') or 'daily Actions sweep'])
-    existing = {(r['date'], r['competitor'], r['metric']) for r in read_hist()}
-    new = [r for r in rows if (str(r[0]), r[1], r[2]) not in existing]
+    # Fixed 2026-09-16 (found alongside the staleness bug above): this
+    # dedup key omitted size_sqft entirely, so once ANY size was written
+    # for a given (date, competitor, metric), every OTHER size for that
+    # same combo was silently blocked from ever being appended that day --
+    # e.g. a report rebuilt twice in one day (has happened before, see git
+    # history of manual re-triggers) would drop every genuinely-new size
+    # added between the two runs, not just true duplicates. Now includes
+    # size so only a true (date, competitor, metric, size) repeat is
+    # skipped.
+    existing = {(r['date'], r['competitor'], r['metric'], r['size_sqft']) for r in read_hist()}
+    new = [r for r in rows if (str(r[0]), r[1], r[2], str(r[3])) not in existing]
     if new:
         write_header = not os.path.exists(HIST)
         with open(HIST, 'a', newline='') as f:

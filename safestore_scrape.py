@@ -337,6 +337,16 @@ def build_observation_3m(size, data):
         "per": "week", "promo": promo_text,
         "source": BASE_URL,
         "notes": "Daily Actions sweep (Personal, 3mo, inc VAT, excl StoreProtect/padlock, new customers)",
+        # Added 2026-09-16 after finding a real staleness bug: build_report.py
+        # used to stamp EVERY row it read with "today's date" regardless of
+        # when the underlying observation was actually captured. Since a
+        # good observation intentionally carries forward in
+        # safestore-latest.json across ticks/days that don't get a fresh
+        # price (see tick_main()'s merge logic), this silently relabeled
+        # 2-day-old data as "fresh today" for THREE consecutive days
+        # (2026-09-14 through -16) before being caught. This field lets
+        # build_report.py use the observation's REAL capture date instead.
+        "scraped_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
 
 
@@ -359,6 +369,7 @@ def build_observation_1y(size, data):
         "per": "week", "promo": redLine or "",
         "source": BASE_URL,
         "notes": "Daily Actions sweep (Personal, 1yr, inc VAT, excl StoreProtect/padlock, new customers)",
+        "scraped_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
 
 

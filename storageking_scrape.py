@@ -15,6 +15,7 @@ no observations rather than fabricating rows, so history.csv naturally
 falls back to the last-known prices.
 """
 import json, os, re, shutil, sys, time
+from datetime import datetime, timezone
 from patchright.sync_api import sync_playwright
 
 BASE_URL = 'https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon'
@@ -210,6 +211,7 @@ def build_observation(size, item):
         "per": "week", "promo": promo_desc + ", billed monthly",
         "source": BASE_URL,
         "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)",
+        "scraped_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
 
 
