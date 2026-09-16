@@ -347,6 +347,10 @@ def build_observation_3m(size, data):
         # (2026-09-14 through -16) before being caught. This field lets
         # build_report.py use the observation's REAL capture date instead.
         "scraped_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        # Added 2026-09-16 per Vikas: a real timestamp (not just a date) so
+        # same-day tiebreaking in build_report.py's load_grid() has an
+        # explicit signal instead of relying only on file-append order.
+        "scraped_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
 
@@ -370,6 +374,7 @@ def build_observation_1y(size, data):
         "source": BASE_URL,
         "notes": "Daily Actions sweep (Personal, 1yr, inc VAT, excl StoreProtect/padlock, new customers)",
         "scraped_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "scraped_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
 

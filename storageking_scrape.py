@@ -212,6 +212,7 @@ def build_observation(size, item):
         "source": BASE_URL,
         "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)",
         "scraped_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "scraped_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
 

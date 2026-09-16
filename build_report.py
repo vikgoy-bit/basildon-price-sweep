@@ -54,6 +54,16 @@ os.makedirs(OUTDIR, exist_ok=True)
 # UK date (Actions runs UTC; BST is UTC+1 in summer — close enough for a date stamp)
 TODAY = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime('%Y-%m-%d')
 
+# Added 2026-09-16 per Vikas: a real timestamp (not just a date) for when
+# each row was actually scraped, so same-day tiebreaking in load_grid()
+# has an explicit signal instead of relying only on implicit file-append
+# order (which is fragile -- e.g. a git merge could reorder rows, or two
+# scrapers finishing close together could interleave unpredictably). Uses
+# actual wall-clock time of the build_report.py run, which is close enough
+# to "when scraped" for tiebreaking purposes (the underlying scrape itself
+# happened seconds to minutes earlier in the same run).
+NOW_ISO = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
 # Big Top hybrid guard: weekly rates outside this range are rejected as
 # mis-parses (e.g. a "£1" promo-banner fragment), never written to history.
 BIGTOP_MIN_PW, BIGTOP_MAX_PW = 5.0, 600.0
@@ -69,7 +79,7 @@ GROUPS = [
 PRICE_METRICS = {'unit', 'featured_unit', 'from_price', 'quote_after_test_form',
                  'quote_step_price', 'manual_quote', 'ratecard'}
 HEADER = ['date', 'competitor', 'metric', 'size_sqft', 'rack_rate_pw_gbp',
-          'offer_rate_pw_gbp', 'promo_text', 'source_url', 'notes']
+          'offer_rate_pw_gbp', 'promo_text', 'source_url', 'notes', 'scraped_at']
 AUTOMATED_COMPETITORS = ('Shurgard Basildon', 'Make Space (Billericay)', 'Big Top (own)',
                           'Storage King Basildon', 'Safestore Basildon')
 
@@ -109,11 +119,11 @@ def append_today():
         if 'Shurgard' in comp:
             rows.append([TODAY, 'Shurgard Basildon', 'unit', int(size),
                          o.get('rack_rate') or '', offer, o.get('promo') or '',
-                         o.get('source') or '', 'daily Actions sweep'])
+                         o.get('source') or '', 'daily Actions sweep', NOW_ISO])
         elif 'Make Space' in comp:
             rows.append([TODAY, 'Make Space (Billericay)', 'quote_after_test_form', int(size),
                          o.get('rack_rate') or '', offer, o.get('promo') or '',
-                         o.get('source') or '', 'daily Actions sweep'])
+                         o.get('source') or '', 'daily Actions sweep', NOW_ISO])
         elif 'Big Top' in comp:
             try:
                 offer_val = float(offer)
@@ -141,7 +151,7 @@ def append_today():
     for size_i, (weekly, rack_weekly, promo, source) in bigtop_best.items():
         rows.append([TODAY, 'Big Top (own)', 'unit', size_i,
                      rack_weekly if rack_weekly is not None else '', weekly, promo,
-                     source, 'daily Actions sweep (live site, hybrid v4)'])
+                     source, 'daily Actions sweep (live site, hybrid v4)', NOW_ISO])
     # Only skip a row if an EXACT duplicate (same date, competitor, size,
     # AND price) already exists today. Fixed 2026-09-12: this used to dedup
     # on (date, competitor) alone, which silently discarded every re-scrape
@@ -201,9 +211,10 @@ def append_prebuilt(json_path, source_label):
         if not size or offer in (None, ''):
             continue
         row_date = o.get('scraped_date') or TODAY
+        row_at = o.get('scraped_at') or NOW_ISO
         rows.append([row_date, o.get('competitor', ''), o.get('metric', 'manual_quote'), int(size),
                      o.get('rack_rate') or '', offer, o.get('promo') or '',
-                     o.get('source') or '', o.get('notes') or 'daily Actions sweep'])
+                     o.get('source') or '', o.get('notes') or 'daily Actions sweep', row_at])
     # Fixed 2026-09-16 (found alongside the staleness bug above): this
     # dedup key omitted size_sqft entirely, so once ANY size was written
     # for a given (date, competitor, metric), every OTHER size for that
@@ -231,12 +242,12 @@ def append_prebuilt(json_path, source_label):
 def load_grid():
     """size -> comp -> (offer, rack_or_None, promo_text) for the latest date.
 
-    Row-order tiebreak (fixed 2026-09-12): when a (competitor, size) has more
-    than one row on the SAME date -- e.g. Big Top's scraper checks both
-    /reserve and /pricing, or the workflow was manually re-triggered more
-    than once in a day -- keep whichever row was scraped MOST RECENTLY
-    (i.e. read later from history.csv, since rows are appended in scrape
-    order), not whichever happened to have the lower price.
+    Row-order tiebreak (fixed 2026-09-12, upgraded 2026-09-16): when a
+    (competitor, size) has more than one row on the SAME date -- e.g. Big
+    Top's scraper checks both /reserve and /pricing, or the workflow was
+    manually re-triggered more than once in a day -- keep whichever row
+    was scraped MOST RECENTLY, not whichever happened to have the lower
+    price.
 
     This used to pick the lower price as tiebreak, which was silently wrong
     the day Big Top's own price rose mid-day: a stale re-triggered scrape
@@ -245,6 +256,16 @@ def load_grid():
     the exact opposite of what "latest" should mean. Real-world price CAN
     go up, so "latest" must mean most-recently-observed, never
     lowest-observed.
+
+    Upgraded 2026-09-16 per Vikas: "most recently" used to be inferred
+    purely from file row order (i.e. read later from history.csv == append
+    order == assumed chronological). That's fragile -- a git merge could
+    reorder rows, or two scrapers finishing close together on different
+    machines could interleave unpredictably, silently picking the wrong
+    row with no way to tell after the fact. Now uses the row's own
+    "scraped_at" ISO timestamp (added the same day) as the primary
+    same-date tiebreak signal, falling back to row order (idx) only when
+    scraped_at is missing (older rows written before this field existed).
     """
     latest = {}
     sticky_rack = {}  # (comp,size) -> most recent non-empty standard rate seen (any date)
@@ -257,7 +278,12 @@ def load_grid():
         # (offer only) doesn't wipe the std value captured earlier.
         if rack is not None and (key not in sticky_rack or r['date'] >= sticky_rack[key][0]):
             sticky_rack[key] = (r['date'], rack)
-        val = (r['date'], idx, float(r['offer_rate_pw_gbp']), rack, r['promo_text'] or '')
+        # tiebreak_key: prefer the real scraped_at timestamp (empty string
+        # for old rows without it sorts first, i.e. loses to any row that
+        # DOES have a real timestamp -- reasonable, since a real timestamp
+        # is strictly more trustworthy evidence of recency than its absence)
+        tiebreak_key = (r.get('scraped_at') or '', idx)
+        val = (r['date'], tiebreak_key, float(r['offer_rate_pw_gbp']), rack, r['promo_text'] or '')
         cur = latest.get(key)
         if cur is None or val[0] > cur[0] or (val[0] == cur[0] and val[1] > cur[1]):
             latest[key] = val
