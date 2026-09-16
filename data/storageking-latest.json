@@ -1,6 +1,236 @@
 {
-  "observations": [],
-  "warnings": [
-    "Storage King: fetch failed after retries; no observations this run."
-  ]
+  "observations": [
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 10,
+      "rack_rate": 11.0,
+      "offer_rate": 5.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 15,
+      "rack_rate": 15.0,
+      "offer_rate": 7.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 20,
+      "rack_rate": 17.0,
+      "offer_rate": 8.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 25,
+      "rack_rate": 21.0,
+      "offer_rate": 10.5,
+      "per": "week",
+      "promo": "50% off your first 3 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 30,
+      "rack_rate": 25.0,
+      "offer_rate": 12.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 35,
+      "rack_rate": 30.0,
+      "offer_rate": 15.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 40,
+      "rack_rate": 31.0,
+      "offer_rate": 15.5,
+      "per": "week",
+      "promo": "50% off your first 3 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 45,
+      "rack_rate": 36.0,
+      "offer_rate": 18.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 50,
+      "rack_rate": 39.0,
+      "offer_rate": 19.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 60,
+      "rack_rate": 43.0,
+      "offer_rate": 21.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 70,
+      "rack_rate": 44.0,
+      "offer_rate": 22.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 75,
+      "rack_rate": 49.0,
+      "offer_rate": 24.5,
+      "per": "week",
+      "promo": "50% off your first 3 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 100,
+      "rack_rate": 53.0,
+      "offer_rate": 26.5,
+      "per": "week",
+      "promo": "50% off your first 3 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 125,
+      "rack_rate": 79.0,
+      "offer_rate": 39.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 135,
+      "rack_rate": 103.0,
+      "offer_rate": 51.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 150,
+      "rack_rate": 80.0,
+      "offer_rate": 40.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 175,
+      "rack_rate": 105.0,
+      "offer_rate": 52.5,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 200,
+      "rack_rate": 126.0,
+      "offer_rate": 63.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 225,
+      "rack_rate": 156.0,
+      "offer_rate": 78.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 250,
+      "rack_rate": 158.0,
+      "offer_rate": 79.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    },
+    {
+      "competitor": "Storage King Basildon",
+      "metric": "manual_quote",
+      "size_sqft": 300,
+      "rack_rate": 186.0,
+      "offer_rate": 93.0,
+      "per": "week",
+      "promo": "50% off your first 2 months, billed monthly",
+      "source": "https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon",
+      "notes": "Daily Actions sweep (VAT inc, excl padlock/insurance)"
+    }
+  ],
+  "warnings": []
 }
