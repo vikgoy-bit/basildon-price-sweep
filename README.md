@@ -83,6 +83,58 @@ them up.
   falls back to the last-known price, exactly like a blocked/failed
   in-Actions scrape would.
 
+  **Why the daily Safestore scrape routes through a Tailscale exit node
+  (2026-09-16, informed decision, not an oversight):**
+  Even after moving off GitHub Actions' runner IPs (fix above), Safestore's
+  reCAPTCHA v3 kept rejecting most submissions from the automation host's
+  own IP (a Hostinger VPS) — weeks of testing (identity realism, browser
+  freshness, session batching, hourly-spread submissions, headless vs
+  headed) all improved things somewhat but never reliably. On 2026-09-16 a
+  clean same-day A/B test isolated the real variable: the SAME code, same
+  day, failed twice on the VPS IP, then went 26/26 (zero failures) when
+  routed through Vikas's real UK residential IP via Tailscale (his Windows
+  PC, exit node hostname `ownerve-e3p16pe`, joined to this tailnet via an
+  auth key Vikas issued specifically for this purpose).
+
+  **How it works:** `tailscaled` runs persistently on the automation host
+  at `/opt/data/profiles/alex/tailscale/` (userspace networking + a local
+  SOCKS5 proxy on `localhost:1055` — no root/TUN device needed, and only
+  traffic explicitly pointed at that proxy is affected, not the whole
+  machine). `push-safestore-storageking-to-repo.sh` starts it (idempotent,
+  a no-op if already up) and sets `SAFESTORE_PROXY=socks5://localhost:1055`
+  before invoking `safestore_scrape.py`, which passes it through to every
+  Playwright browser context it launches. **Storage King is intentionally
+  NOT routed through this proxy** — its issue was never IP-related (see the
+  Storage King root-cause note elsewhere in this README: their own backend
+  500s on the cookie-consent widget's reload), so there's no reason to add
+  a dependency on Vikas's home connection for it.
+
+  **Operational implication for future maintainers:** the daily Safestore
+  scrape now has a soft dependency on Vikas's home internet connection and
+  his Windows PC staying on Tailscale (`tailscale up` with itself, or at
+  least being reachable as an exit node). If that machine is offline, the
+  push script logs a clear warning and Safestore's scrape runs on the VPS's
+  own IP instead — degrading back to the known-unreliable reCAPTCHA
+  behaviour, NOT silently failing or corrupting `history.csv` (the
+  scraper's existing safe-degradation logic — zero fabricated data on a bad
+  run — is unaffected by this change). Nothing about this setup requires
+  ongoing action from Vikas; it's "set once, keep working" as long as his
+  PC stays on the tailnet.
+
+  **Full 26-item sweep cooldown (2026-09-16):** now that a clean full run
+  is achievable, `safestore_scrape.py`'s `main()` enforces a 24-hour
+  cooldown between full sweeps, tracked in
+  `/opt/data/profiles/alex/state/safestore-last-full-run.json`. A second
+  invocation within 24h of a run that got a healthy majority of
+  observations (≥20/26) with no "looks blocked" signal is skipped entirely
+  — no browser launched. A run that looked like a partial failure/block is
+  NOT subject to the cooldown (retrying soon after a bad run is exactly
+  what you want). `--force` bypasses this for manual/live testing.
+  Rationale: each full sweep is 26 genuine form submissions against
+  Safestore's real lead-capture form; running it more than once a day once
+  it's reliable adds real-world load on their site for no benefit (prices
+  don't change that often).
+
 ## GitHub Actions schedule reliability (added 2026-08-27)
 On 2026-08-27, the `schedule` trigger (`cron: "30 5 * * *"`) was silently
 skipped by GitHub for a full day — no run, no queued attempt, nothing in
