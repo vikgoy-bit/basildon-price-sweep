@@ -533,7 +533,84 @@ def new_session(p):
     return profile_dir, ctx, pg
 
 
-def main():
+# Added 2026-09-16 per Vikas, after confirming a full 26/26 clean run is
+# achievable via a residential IP (see README.md "Why the daily Safestore
+# scrape routes through a Tailscale exit node" for the full story): once
+# reCAPTCHA v3 stops being the bottleneck, running the FULL 26-item sweep
+# more than once a day serves no purpose -- prices don't change that
+# often, and it's needless load on Safestore's real lead-capture form
+# (each run is 26 genuine form submissions with fabricated contact
+# details, even though they route to our own inbox).
+#
+# LAST_RUN_PATH tracks the most recent full-sweep OUTCOME (not just that
+# it ran). A second invocation within 24h of a run that came back clean
+# is skipped entirely (no browser launched, no submissions sent). If the
+# last run had an issue (looked blocked/rate-limited, or came back with
+# unusually few observations), the 24h cooldown does NOT apply -- retrying
+# sooner is exactly what you want when the previous attempt likely failed
+# for reasons that might not repeat (see the reCAPTCHA-v3-is-noisy note
+# above). Bypass entirely with --force (e.g. for manual/live testing).
+LAST_RUN_PATH = "/opt/data/profiles/alex/state/safestore-last-full-run.json"
+FULL_RUN_COOLDOWN_HOURS = 24
+# A run counts as "ok" (subject to the cooldown) only if it got a healthy
+# majority of the 26 possible observations AND didn't trip either of the
+# "looks blocked" safety valves below. Anything short of that is an
+# "issue" -- always safe to retry immediately.
+_MIN_OK_OBSERVATIONS = 20  # out of a possible 26 (13 sizes x 2 durations)
+
+
+def _load_last_run():
+    if not os.path.exists(LAST_RUN_PATH):
+        return None
+    try:
+        with open(LAST_RUN_PATH) as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _save_last_run(outcome, observations, warnings):
+    os.makedirs(os.path.dirname(LAST_RUN_PATH), exist_ok=True)
+    with open(LAST_RUN_PATH, "w") as f:
+        json.dump({
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "outcome": outcome,  # "ok" or "issue"
+            "observations": observations,
+            "warnings": warnings,
+        }, f, indent=2)
+
+
+def _cooldown_active():
+    """Returns (active: bool, reason: str) -- active=True means skip this run."""
+    last = _load_last_run()
+    if last is None:
+        return False, "no previous run on record"
+    if last.get("outcome") != "ok":
+        return False, f"previous run ({last.get('timestamp')}) was flagged 'issue' -- retry always allowed"
+    try:
+        last_dt = datetime.strptime(last["timestamp"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except Exception:
+        return False, "previous run timestamp unparseable -- treating as no record"
+    elapsed_hours = (datetime.now(timezone.utc) - last_dt).total_seconds() / 3600
+    if elapsed_hours < FULL_RUN_COOLDOWN_HOURS:
+        return True, (
+            f"last clean full run was {elapsed_hours:.1f}h ago "
+            f"({last['timestamp']}, {last.get('observations')} observations) -- "
+            f"within the {FULL_RUN_COOLDOWN_HOURS}h cooldown, skipping"
+        )
+    return False, f"last clean run was {elapsed_hours:.1f}h ago -- cooldown expired"
+
+
+def main(force=False):
+    if not force:
+        skip, reason = _cooldown_active()
+        if skip:
+            print(f"Safestore full sweep SKIPPED: {reason}")
+            print("(pass --force to override, e.g. for manual/live testing)")
+            return
+        else:
+            print(f"Safestore full sweep proceeding: {reason}")
+
     observations = []
     warnings = []
 
@@ -689,6 +766,18 @@ def main():
     for w in warnings:
         print("WARN:", w)
 
+    # Record outcome for the 24h-cooldown check on the NEXT invocation.
+    # "ok" (subject to cooldown) requires a healthy majority of possible
+    # observations AND no active "looks blocked" safety-valve warning this
+    # run. Anything else is "issue" -- next run won't be blocked by cooldown.
+    blocked_signal = any(
+        ("likely blocked/rate-limited" in w) or ("ALL " in w and "reCAPTCHA/500" in w)
+        for w in warnings
+    )
+    outcome = "ok" if (len(observations) >= _MIN_OK_OBSERVATIONS and not blocked_signal) else "issue"
+    _save_last_run(outcome, len(observations), warnings)
+    print(f"Run outcome recorded: {outcome} ({len(observations)}/{len(AVAILABLE_SIZES) * 2} observations)")
+
 
 if __name__ == "__main__":
     # Added 2026-09-15: `--tick[=N]` runs tick_main() (a small hourly
@@ -696,10 +785,16 @@ if __name__ == "__main__":
     # main() sweep. Kept as an opt-in flag rather than the default so the
     # existing Mon/Wed/Fri Hermes cron job (which expects one full run
     # covering all 26 items) is completely unaffected.
+    #
+    # Added 2026-09-16: `--force` bypasses the 24h same-day-cooldown check
+    # in main() (see its comment) -- for manual/live testing only; the
+    # scheduled cron invocation should never pass this.
+    _force = "--force" in sys.argv
     if len(sys.argv) > 1 and sys.argv[1].startswith("--tick"):
         n = 3
         if "=" in sys.argv[1]:
             n = int(sys.argv[1].split("=", 1)[1])
         tick_main(count=n)
     else:
-        main()
+        main(force=_force)
+
