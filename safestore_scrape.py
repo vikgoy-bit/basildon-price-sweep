@@ -276,7 +276,31 @@ def scrape_one(pg, size, duration_radio_id, attempts=3):
     open) page, retrying by reloading the SAME page/session rather than
     tearing down and relaunching a brand-new empty browser profile each
     time. See main() for why: a fresh empty profile per attempt is a much
-    stronger bot signal than a real user's single browsing session."""
+    stronger bot signal than a real user's single browsing session.
+
+    Added 2026-09-19: distinguishes a genuine PROXY/NETWORK-level failure
+    (net::ERR_PROXY_CONNECTION_FAILED, ERR_CONNECTION_RESET, etc. -- the
+    Tailscale SOCKS5 tunnel to the home exit node dropping mid-request)
+    from a normal Safestore-side outcome (reCAPTCHA 500, page structure
+    issue). Root cause found 2026-09-19: the scheduled 2026-09-18 05:39
+    run got 0/26 with EVERY failure being a raw "fetch failed after
+    retries" (i.e. get_quote_for() raised or returned None before even
+    reaching Safestore's reCAPTCHA gate) -- traced via tailscaled.log to
+    repeated "socks5: connection reset by peer" errors and exit-node
+    re-negotiation clustered in that exact run window, most likely
+    transient network instability on the path to Vikas's home PC (sleep/
+    wake, WiFi hiccup, DERP relay hiccup -- not yet narrowed further).
+    A connection-level failure is a completely different problem from
+    reCAPTCHA scoring and deserves a longer, more patient retry (the
+    tunnel may just need a few seconds to recover) rather than the same
+    6s backoff used for a reCAPTCHA rejection.
+    """
+    _CONN_ERROR_RE = re.compile(
+        r"net::ERR_(PROXY_CONNECTION_FAILED|SOCKS_CONNECTION_FAILED|"
+        r"CONNECTION_RESET|CONNECTION_CLOSED|TUNNEL_CONNECTION_FAILED|"
+        r"TIMED_OUT|EMPTY_RESPONSE|CONNECTION_REFUSED|NAME_NOT_RESOLVED|"
+        r"ADDRESS_UNREACHABLE)"
+    )
     last_server_error = False
     for attempt in range(attempts):
         try:
@@ -288,11 +312,23 @@ def scrape_one(pg, size, duration_radio_id, attempts=3):
             if data:
                 return data
         except Exception as e:
-            print(f"  size {size} attempt {attempt+1} exception: {e}", file=sys.stderr)
+            msg = str(e)
+            is_conn_error = bool(_CONN_ERROR_RE.search(msg))
+            print(f"  size {size} attempt {attempt+1} exception"
+                  f"{' (proxy/network-level)' if is_conn_error else ''}: {e}",
+                  file=sys.stderr)
+            if is_conn_error:
+                # Give the Tailscale tunnel real time to recover instead
+                # of hammering it every 6s -- a dropped SOCKS5 connection
+                # from an exit node re-negotiation is often transient
+                # within 15-30s, not permanent.
+                time.sleep(20)
+                continue
         time.sleep(6)
     if last_server_error:
         return {"safestore_server_error": True}
     return None
+
 
 
 def money(s):
@@ -601,6 +637,51 @@ def _cooldown_active():
     return False, f"last clean run was {elapsed_hours:.1f}h ago -- cooldown expired"
 
 
+def _proxy_health_check(proxy_url, attempts=3, target="https://www.safestore.co.uk/",
+                         retry_wait_s=15):
+    """Probe the given SOCKS5 proxy URL (e.g. 'socks5://localhost:1055')
+    with real HTTP requests via curl before trusting it for the full
+    sweep. Returns (healthy: bool, detail: str).
+
+    Added 2026-09-19 after the 2026-09-18 05:39 run's 0/26 result was
+    traced to the Tailscale tunnel being unstable during that window --
+    see main()'s comment for the full story. curl is used (rather than a
+    Python SOCKS library) because it's already a hard dependency of the
+    surrounding shell scripts and needs no extra package install.
+
+    A single flaky attempt is normal (matches the "connection reset"
+    pattern seen in tailscaled.log) so this retries a few times with a
+    real wait between attempts -- only reports unhealthy if EVERY
+    attempt fails, since a single transient blip shouldn't abort a whole
+    day's sweep.
+    """
+    import subprocess
+    last_detail = ""
+    for attempt in range(1, attempts + 1):
+        try:
+            result = subprocess.run(
+                ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+                 "--socks5-hostname", proxy_url.replace("socks5://", ""),
+                 target, "--max-time", "15"],
+                capture_output=True, text=True, timeout=20,
+            )
+            code = result.stdout.strip()
+            # Safestore's homepage may 403 a raw curl (no browser fingerprint,
+            # no cookies) -- that's fine, it still proves the TUNNEL itself
+            # is up and reaching the real internet. Only a curl-level
+            # failure (empty output, non-zero exit, connection error) means
+            # the tunnel itself is down.
+            if result.returncode == 0 and code and code != "000":
+                return True, f"attempt {attempt}/{attempts}: HTTP {code} via proxy (tunnel is up)"
+            last_detail = f"attempt {attempt}/{attempts}: curl exit={result.returncode}, http_code={code or '(none)'}, stderr={result.stderr.strip()[:200]}"
+        except Exception as e:
+            last_detail = f"attempt {attempt}/{attempts}: exception {e}"
+        print(f"  [preflight] {last_detail}", file=sys.stderr)
+        if attempt < attempts:
+            time.sleep(retry_wait_s)
+    return False, last_detail
+
+
 def main(force=False):
     if not force:
         skip, reason = _cooldown_active()
@@ -610,6 +691,40 @@ def main(force=False):
             return
         else:
             print(f"Safestore full sweep proceeding: {reason}")
+
+    # Added 2026-09-19: pre-flight proxy/tunnel health check. Root cause of
+    # the 2026-09-18 05:39 run's 0/26 result (every failure a raw
+    # "fetch failed after retries", i.e. never even reaching Safestore's
+    # reCAPTCHA gate) was traced to the Tailscale SOCKS5 tunnel to Vikas's
+    # home exit node being unstable during that specific window (repeated
+    # "socks5: connection reset by peer" + exit-node re-negotiation in
+    # tailscaled.log). Burning all 26 attempts into a bad connectivity
+    # window wastes real submissions against Safestore's form for nothing.
+    # Instead: probe the tunnel with a few real HTTP requests BEFORE
+    # starting the sweep. If it's flaky right now, wait and retry a
+    # handful of times (the instability seen so far has been transient,
+    # recovering within minutes) rather than pushing ahead into a run
+    # that's very likely to fail across the board.
+    proxy = os.environ.get("SAFESTORE_PROXY", "")
+    if proxy:
+        healthy, detail = _proxy_health_check(proxy)
+        if not healthy:
+            warnings = [f"Safestore: proxy/tunnel health check failed after retries -- {detail}. "
+                        "Skipping this run entirely rather than burning 26 submissions into a "
+                        "known-bad connectivity window. Will retry on the next scheduled invocation."]
+            print("Safestore full sweep ABORTED (pre-flight check):", warnings[0])
+            out = {"observations": [], "warnings": warnings}
+            data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+            os.makedirs(data_dir, exist_ok=True)
+            # Deliberately do NOT overwrite safestore-latest.json here --
+            # a failed pre-flight check has no new information to offer,
+            # so leave whatever the last real run wrote in place (same
+            # "don't fabricate/wipe data on failure" principle as the
+            # rest of this script). Just record the issue outcome so the
+            # cooldown logic knows to allow an immediate retry.
+            _save_last_run("issue", 0, warnings)
+            return
+        print(f"Safestore proxy/tunnel health check passed: {detail}")
 
     observations = []
     warnings = []
