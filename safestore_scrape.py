@@ -60,33 +60,57 @@ _LAST_NAMES = ['Bennett', 'Foster', 'Hughes', 'Palmer', 'Reid', 'Sharp', 'Walsh'
 # local customer, not an obviously synthetic "TS1 1ST" test value.
 _POSTCODE_PREFIXES = ['SS14', 'SS13', 'SS15', 'SS16', 'CM11', 'CM12', 'RM10', 'RM17']
 
-_first = random.choice(_FIRST_NAMES)
-_last = random.choice(_LAST_NAMES)
-_email_num = random.randint(1000, 9999)
-_postcode = f"{random.choice(_POSTCODE_PREFIXES)} {random.randint(1,9)}{random.choice('ABDEFGHJLNPQRSTUWXYZ')}{random.choice('ABDEFGHJLNPQRSTUWXYZ')}"
-_phone_suffix = f"{random.randint(0, 99999999):08d}"
+def generate_identity():
+    """Returns a fresh, randomized, realistic-looking identity for one
+    Safestore quote submission.
 
-_email_local = 'baas123123'
-_dot_pos = random.randint(2, len(_email_local) - 2)
-_email_with_dot = _email_local[:_dot_pos] + '.' + _email_local[_dot_pos:]
+    CRITICAL FIX 2026-09-21 (per Vikas: "something is different to what we
+    did manually"): this used to be a MODULE-LEVEL constant (TEST_IDENTITY,
+    generated once at import time), so every submission within a single
+    `main()` run reused the EXACT SAME name/email/postcode/phone for all
+    26 size/duration combinations. Manual one-at-a-time testing on
+    2026-09-16 never hit this bug because each test was launched as a
+    separate `python3` process -- a fresh interpreter re-ran the
+    module-level randomization every time, so manual testing accidentally
+    got a fresh identity per submission while the real production run did
+    not. Confirmed by inspection (module-level code only executes once per
+    process) and directly explains why "26 clean manual one-offs" and "26
+    submissions in one main() run" behaved completely differently despite
+    identical scraping code -- 26 identical-identity submissions in one
+    sitting is a much stronger and more obvious bot signal to reCAPTCHA v3
+    than the browser-freshness/session-batching factors investigated
+    earlier. Now called fresh before every single submission attempt (see
+    scrape_one()), matching how manual testing actually behaved.
+    """
+    first = random.choice(_FIRST_NAMES)
+    last = random.choice(_LAST_NAMES)
+    postcode = f"{random.choice(_POSTCODE_PREFIXES)} {random.randint(1,9)}{random.choice('ABDEFGHJLNPQRSTUWXYZ')}{random.choice('ABDEFGHJLNPQRSTUWXYZ')}"
+    phone_suffix = f"{random.randint(0, 99999999):08d}"
+    email_local = "baas123123"
+    dot_pos = random.randint(2, len(email_local) - 2)
+    email_with_dot = email_local[:dot_pos] + "." + email_local[dot_pos:]
+    return {
+        "firstName": first,
+        "lastName": last,
+        # IMPORTANT: must route to an inbox we actually control, never a
+        # guessed real person's address. Avoids "+tag" addressing (a
+        # well-known disposable/tracking-email signal some anti-fraud
+        # systems flag) by using Gmail's dot-insensitivity instead:
+        # gmail.com ignores dots in the local-part, so inserting one at a
+        # random position still delivers to the exact same real inbox
+        # (baas123123@gmail.com) while looking like an ordinary address to
+        # the receiving site. SWEEP_EMAIL/SWEEP_POSTCODE/SWEEP_PHONE env
+        # vars, if set, deliberately override this per-call randomization
+        # (e.g. for a one-off manual test that wants a fixed value).
+        "email": os.environ.get("SWEEP_EMAIL", f"{email_with_dot}@gmail.com"),
+        "postcode": os.environ.get("SWEEP_POSTCODE", postcode),
+        "phone": os.environ.get("SWEEP_PHONE", f"079{phone_suffix}"),
+    }
 
-TEST_IDENTITY = {
-    "firstName": _first,
-    "lastName": _last,
-    # IMPORTANT: must route to an inbox we actually control, never a
-    # guessed real person's address. Avoids "+tag" addressing (a
-    # well-known disposable/tracking-email signal some anti-fraud systems
-    # flag) by using Gmail's dot-insensitivity instead: gmail.com ignores
-    # dots in the local-part, so inserting one at a random position still
-    # delivers to the exact same real inbox (baas123123@gmail.com) while
-    # looking like an ordinary address to the receiving site.
-    "email": os.environ.get("SWEEP_EMAIL", f"{_email_with_dot}@gmail.com"),
-    "postcode": os.environ.get("SWEEP_POSTCODE", _postcode),
-    "phone": os.environ.get("SWEEP_PHONE", f"079{_phone_suffix}"),
-}
 
 # Confirmed real sizes Basildon offers (verified 2026-08-26). If Safestore
 # changes its unit mix at this store, this list needs a manual refresh —
+
 # sizes not in this list are simply never attempted (no false "not
 # available" claims about sizes that were never checked).
 AVAILABLE_SIZES = [10, 16, 25, 35, 50, 75, 100, 125, 150, 175, 200, 250, 500]
@@ -168,7 +192,14 @@ def accept_cookies(pg):
         pass
 
 
-def get_quote_for(pg, size, duration_radio_id, debug=False):
+def get_quote_for(pg, size, duration_radio_id, identity=None, debug=False):
+    # Fixed 2026-09-21: identity must be freshly generated PER SUBMISSION
+    # (see generate_identity()'s docstring for why) -- callers should
+    # normally always pass one explicitly. The fallback here exists only
+    # so any leftover/ad-hoc call site doesn't crash; a real production
+    # run should never rely on it.
+    if identity is None:
+        identity = generate_identity()
     pg.goto(BASE_URL, timeout=60000)
     pg.wait_for_load_state("domcontentloaded")
     accept_cookies(pg)
@@ -216,11 +247,11 @@ def get_quote_for(pg, size, duration_radio_id, debug=False):
     if debug: print("  [debug] passed When step")
 
     pg.wait_for_selector("#inputFirstName", state="visible", timeout=15000)
-    pg.click("#inputFirstName"); pg.type("#inputFirstName", TEST_IDENTITY["firstName"], delay=60)
-    pg.click("#inputSurname"); pg.type("#inputSurname", TEST_IDENTITY["lastName"], delay=60)
-    pg.click("#inputEmail"); pg.type("#inputEmail", TEST_IDENTITY["email"], delay=60)
-    pg.click("#inputPostcode"); pg.type("#inputPostcode", TEST_IDENTITY["postcode"], delay=60)
-    pg.click("#inputContactNumber"); pg.type("#inputContactNumber", TEST_IDENTITY["phone"], delay=60)
+    pg.click("#inputFirstName"); pg.type("#inputFirstName", identity["firstName"], delay=60)
+    pg.click("#inputSurname"); pg.type("#inputSurname", identity["lastName"], delay=60)
+    pg.click("#inputEmail"); pg.type("#inputEmail", identity["email"], delay=60)
+    pg.click("#inputPostcode"); pg.type("#inputPostcode", identity["postcode"], delay=60)
+    pg.click("#inputContactNumber"); pg.type("#inputContactNumber", identity["phone"], delay=60)
     if debug: print("  [debug] filled details form")
 
     yq = pg.query_selector("button:has-text('Your Quote')")
@@ -304,7 +335,15 @@ def scrape_one(pg, size, duration_radio_id, attempts=3):
     last_server_error = False
     for attempt in range(attempts):
         try:
-            data = get_quote_for(pg, size, duration_radio_id)
+            # Fixed 2026-09-21: fresh identity EVERY attempt/submission,
+            # not a module-level constant reused across all 26 items in a
+            # run -- see generate_identity()'s docstring for the full
+            # story (this was the actual difference between manual
+            # one-at-a-time testing, which accidentally got a fresh
+            # identity per process launch, and the real production run,
+            # which silently reused one identity for the whole sweep).
+            identity = generate_identity()
+            data = get_quote_for(pg, size, duration_radio_id, identity=identity)
             if data and data.get("safestore_server_error"):
                 last_server_error = True
                 time.sleep(6)
