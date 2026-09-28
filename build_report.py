@@ -664,6 +664,7 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_ht
 <h3 style="margin:14px 0 4px;font-size:14px;">Comments</h3>
 {notes_html}
 {recommendations_html}
+<p style="margin:16px 0 4px;font-size:12px;"><a href="https://docs.google.com/spreadsheets/d/1AwB-DVQTnLPTvUBS0_Cue5D_o8igN66pJ3HmXNl4tAY/edit?gid=0#gid=0" style="color:#1155CC;">Log of price changes here</a></p>
 </body></html>"""
 
 
