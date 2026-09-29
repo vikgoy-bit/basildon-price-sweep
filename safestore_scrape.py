@@ -117,7 +117,26 @@ AVAILABLE_SIZES = [10, 16, 25, 35, 50, 75, 100, 125, 150, 175, 200, 250, 500]
 
 DURATIONS = {
     "3months": "radio-90-quote",
-    "1year": "radio-365-quote",
+    # FIXED 2026-09-29: Safestore changed their quote wizard's Duration
+    # step. The old 1-year radio was "radio-365-quote"; live inspection
+    # today found it's now "radio-360-quote" (labelled "1 year +") --
+    # the site also gained several NEW duration options not previously
+    # scraped (1 week/radio-7-quote, 4 weeks/radio-28-quote, 8 weeks/
+    # radio-56-quote, 6 months/radio-180-quote), none of which we use.
+    # This silently broke ALL 13 one-year observations starting from
+    # whenever Safestore made this change (first confirmed broken run:
+    # 2026-09-28) -- every attempt was timing out waiting for a label
+    # that no longer existed on the page, indistinguishable from the
+    # start of a run without live debugging (both show up as "fetch
+    # failed after retries" in the summary warnings). This was NEVER a
+    # reCAPTCHA/bot-detection issue for the 1-year duration specifically
+    # -- confirmed live: with the corrected selector, the full flow
+    # (Duration -> When -> Details form) works end-to-end immediately.
+    # 3-month observations were completely unaffected by this the whole
+    # time (radio-90-quote never changed), which is why every recent
+    # "partial" run showed a clean 13/13 3mo + 0/13 1yr split rather than
+    # noisy/random failures across both durations.
+    "1year": "radio-360-quote",
 }
 
 PROFILE_ROOT = "/tmp/safestore-sweep-profiles"
