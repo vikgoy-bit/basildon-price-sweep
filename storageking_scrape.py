@@ -29,7 +29,20 @@ EXTRACT_JS = """() => {
     const opts = Array.from(document.querySelectorAll('.store-storage-unit-option'));
     return opts.map(o => {
         const sizeEl = o.querySelector('p.is-blue.is-size-3, p.is-size-3');
-        const priceEl = o.querySelector('p.title');
+        // FIXED 2026-09-30: Storage King restyled this card -- the price
+        // paragraph lost its old '.title' class entirely (confirmed via
+        // live outerHTML dump: no element on the whole card has class
+        // 'title' anymore). It's now
+        // 'p.is-size-2.is-size-3-mobile.is-blue.has-text-weight-normal.has-text-box-trim'.
+        // This silently broke price parsing for ALL 21 sizes starting
+        // whenever Storage King made this change (first confirmed
+        // broken run: 2026-09-30) -- the page still loaded fine and
+        // promoText still parsed (different element, unaffected), which
+        // is why this surfaced as "fetched but could not parse price"
+        // for every single size rather than a fetch/block failure.
+        // Verified live: exactly 1 match per size card across all 21
+        // sizes with the new selector, no ambiguity.
+        const priceEl = o.querySelector('p.is-size-2, p.is-blue.has-text-weight-normal');
         const promoTextEl = Array.from(o.querySelectorAll('p')).find(p => /off your first|thereafter/i.test(p.textContent));
         return {
             sizeText: sizeEl ? sizeEl.textContent.trim() : null,
