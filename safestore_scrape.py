@@ -476,13 +476,13 @@ TICK_PROGRESS_PATH = "/opt/data/profiles/alex/state/safestore-tick-progress.json
 
 
 def _all_work_items():
+    # FIXED 2026-09-30: same duration-ordering-bias fix as main() -- see
+    # that function's comment for the full rationale. Interleave rather
+    # than segregate all-3mo-then-all-1yr.
     items = []
-    for duration_key, radio_id, builder in [
-        ("3months", DURATIONS["3months"], build_observation_3m),
-        ("1year", DURATIONS["1year"], build_observation_1y),
-    ]:
-        for size in AVAILABLE_SIZES:
-            items.append((duration_key, radio_id, builder, size))
+    for size in AVAILABLE_SIZES:
+        items.append(("3months", DURATIONS["3months"], build_observation_3m, size))
+        items.append(("1year", DURATIONS["1year"], build_observation_1y, size))
     return items
 
 
@@ -814,13 +814,26 @@ def main(force=False):
     # production -- see note above. BATCH_SIZE is the actual fix for that.
     BATCH_SIZE = 4
 
+    # FIXED 2026-09-30 (duration ordering bias): the old ordering ran
+    # ALL 13 three-month items first (positions 0-12), THEN all 13
+    # one-year items (positions 13-25), every single run, no exceptions.
+    # If there's ANY cumulative degradation across a 26-item session --
+    # which is exactly the pattern documented throughout this scraper's
+    # history (reCAPTCHA v3 risk scoring, session/IP-level signals) --
+    # one-year was systematically disadvantaged EVERY run regardless of
+    # which specific bug was active that day, simply by always being in
+    # the back half. Directly relevant: 2026-09-29's post-selector-fix
+    # run got a suspiciously clean 13/13 3mo + 0/13 1yr split -- some of
+    # that could be this ordering bias compounding with normal
+    # reCAPTCHA noise, not purely bad luck on the 1yr duration itself.
+    # Fix: interleave duration x size (3mo-10, 1yr-10, 3mo-16, 1yr-16, ...)
+    # so both durations get an even mix of early (least-degraded) and
+    # late (most-degraded) positions across the run, rather than one
+    # duration always drawing the short straw.
     work_items = []
-    for duration_key, radio_id, builder in [
-        ("3months", DURATIONS["3months"], build_observation_3m),
-        ("1year", DURATIONS["1year"], build_observation_1y),
-    ]:
-        for size in AVAILABLE_SIZES:
-            work_items.append((duration_key, radio_id, builder, size))
+    for size in AVAILABLE_SIZES:
+        work_items.append(("3months", DURATIONS["3months"], build_observation_3m, size))
+        work_items.append(("1year", DURATIONS["1year"], build_observation_1y, size))
 
     # Per-duration counters for the existing safety-valve logic below.
     per_duration = {
