@@ -2628,3 +2628,10 @@ date,competitor,metric,size_sqft,rack_rate_pw_gbp,offer_rate_pw_gbp,promo_text,s
 2026-10-04,Big Top (own),unit,175,83.51,41.76,£1/wk first 6 weeks,https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:22:23Z
 2026-10-04,Big Top (own),unit,250,96.01,48.01,£1/wk first 6 weeks,https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:22:23Z
 2026-10-04,Big Top (own),unit,300,186.01,186.01,,https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:22:23Z
+2026-10-04,Big Top (own),unit,35,30.4,15.2,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z
+2026-10-04,Big Top (own),unit,50,36.4,18.2,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z
+2026-10-04,Big Top (own),unit,125,72.0,36.0,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z
+2026-10-04,Big Top (own),unit,175,83.5,41.75,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z
+2026-10-04,Big Top (own),unit,250,96.0,48.0,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z
+2026-10-04,Big Top (own),unit,300,186.0,186.0,,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z
+2026-10-04,Big Top (own),unit,850,501.0,501.0,,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-04T08:37:52Z

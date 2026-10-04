@@ -440,31 +440,31 @@
       "rack_rate": 17,
       "offer_rate": 8.5,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":25,\"standard_rate_gbp_per_week\":17,\"offer_rate_gbp_per_week\":8.5,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":25,\"monthly_price\":73.67,\"offer_monthly_price\":36.84,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":5}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 35,
-      "rack_rate": 28.6,
-      "offer_rate": 14.3,
+      "rack_rate": 30.4,
+      "offer_rate": 15.2,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":35,\"standard_rate_gbp_per_week\":28.6,\"offer_rate_gbp_per_week\":14.3,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":35,\"monthly_price\":131.73,\"offer_monthly_price\":65.86,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":4}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 50,
-      "rack_rate": 35.5,
-      "offer_rate": 17.75,
+      "rack_rate": 36.4,
+      "offer_rate": 18.2,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":50,\"standard_rate_gbp_per_week\":35.5,\"offer_rate_gbp_per_week\":17.75,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":50,\"monthly_price\":157.73,\"offer_monthly_price\":78.86,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":9}"
     },
     {
       "competitor": "Big Top (own)",
@@ -473,9 +473,9 @@
       "rack_rate": 51.5,
       "offer_rate": 25.75,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":85,\"standard_rate_gbp_per_week\":51.5,\"offer_rate_gbp_per_week\":25.75,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":85,\"monthly_price\":223.16,\"offer_monthly_price\":111.58,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":2}"
     },
     {
       "competitor": "Big Top (own)",
@@ -484,20 +484,20 @@
       "rack_rate": 58.6,
       "offer_rate": 29.3,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":100,\"standard_rate_gbp_per_week\":58.6,\"offer_rate_gbp_per_week\":29.3,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":100,\"monthly_price\":253.93,\"offer_monthly_price\":126.97,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":3}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 125,
-      "rack_rate": 72.01,
-      "offer_rate": 36.01,
+      "rack_rate": 72,
+      "offer_rate": 36,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":125,\"standard_rate_gbp_per_week\":72.01,\"offer_rate_gbp_per_week\":36.01,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":125,\"monthly_price\":312,\"offer_monthly_price\":156,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":9}"
     },
     {
       "competitor": "Big Top (own)",
@@ -506,42 +506,53 @@
       "rack_rate": 73.6,
       "offer_rate": 36.8,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":150,\"standard_rate_gbp_per_week\":73.6,\"offer_rate_gbp_per_week\":36.8,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":150,\"monthly_price\":318.93,\"offer_monthly_price\":159.47,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":6}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 175,
-      "rack_rate": 83.51,
-      "offer_rate": 41.76,
+      "rack_rate": 83.5,
+      "offer_rate": 41.75,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":175,\"standard_rate_gbp_per_week\":83.51,\"offer_rate_gbp_per_week\":41.76,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":175,\"monthly_price\":361.83,\"offer_monthly_price\":180.92,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 250,
-      "rack_rate": 96.01,
-      "offer_rate": 48.01,
+      "rack_rate": 96,
+      "offer_rate": 48,
       "per": "week",
-      "promo": "£1/wk first 6 weeks",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":250,\"standard_rate_gbp_per_week\":96.01,\"offer_rate_gbp_per_week\":48.01,\"promo\":\"£1/wk first 6 weeks\"}"
+      "promo": "50% off after 6 weeks for £1",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":250,\"monthly_price\":416,\"offer_monthly_price\":208,\"offer\":\"50% off after 6 weeks for £1\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 300,
-      "rack_rate": 186.01,
-      "offer_rate": 186.01,
+      "rack_rate": 186,
+      "offer_rate": 186,
       "per": "week",
       "promo": "",
-      "source": "https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json",
-      "raw": "{\"size_sqft\":300,\"standard_rate_gbp_per_week\":186.01,\"offer_rate_gbp_per_week\":186.01,\"promo\":\"\"}"
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":300,\"monthly_price\":806,\"offer_monthly_price\":null,\"offer\":null,\"units_available\":1}"
+    },
+    {
+      "competitor": "Big Top (own)",
+      "metric": "unit",
+      "size_sqft": 850,
+      "rack_rate": 501,
+      "offer_rate": 501,
+      "per": "week",
+      "promo": "",
+      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
+      "raw": "{\"size_sqft\":850,\"monthly_price\":2171,\"offer_monthly_price\":null,\"offer\":null,\"units_available\":1}"
     }
   ],
   "warnings": [
