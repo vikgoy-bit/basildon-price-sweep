@@ -12,8 +12,37 @@ them up.
 - **Make Space Wickford** — household quote flow (robots-permitted), selecting
   the Wickford store and using the marked test identity where a contact form
   gates prices. Scraped by GitHub Actions itself.
-- **Big Top (own site)** — reserve/pricing pages as the benchmark. Scraped by
-  GitHub Actions itself.
+
+  **Size-list fix (2026-10-04):** the sweep used to attempt 24 sizes — the
+  union of every OTHER competitor's size list — but Make Space's Billericay
+  carousel only ever stocked 13 of them. The other 11 (15, 30, 40, 45, 55,
+  60, 70, 130, 135, 180, 260 sq ft) failed every single run with "size
+  option not found", which was harmless but inflated the warnings list
+  enough to obscure genuine new failures. Trimmed `MS_SIZES` to the real 13
+  (confirmed by reading `.room-name` elements live). Also bumped the
+  carousel-paging retry from 5 to 15 clicks — the last-position card ("20
+  sq ft") needs ~10 "next" clicks to scroll into view since each click
+  moves the slider a fraction of a card width, not a full card.
+- **Big Top (own site)** — reads a first-party JSON rate-card feed, NOT a
+  browser scrape of /reserve or /pricing. Those pages switched (~2026-09-26
+  to 09-29) to gating all prices behind a lead-capture form; the old scraper
+  found zero price cards there and silently stopped adding observations —
+  no exception, no warning, so the report just quietly kept showing 5-day-
+  stale data (caught 2026-10-04). Rather than build a scraper against our
+  OWN site's lead-gen form (pointless bot-detection risk for data we already
+  own), Big Top now does a plain `fetch()` of a rate-card JSON:
+  `{ updated_at, units: [{ size_sqft, standard_rate_gbp_per_week,
+  offer_rate_gbp_per_week, promo }] }`. `BIGTOP_PRICE_CARD_URL` env var
+  points at it — defaults to a repo-local mock
+  (`mock/price-card.json`, read via raw.githubusercontent.com) that's
+  manually kept in sync until the real backend exists. **Vikas is building
+  this as a real endpoint on bigtopselfstorage.com via Lovable** — once
+  that ships, set `BIGTOP_PRICE_CARD_URL` to the real URL (repo secret or
+  workflow env) and delete `mock/price-card.json`; no other code change
+  needed. Until then, keep `mock/price-card.json` updated by hand whenever
+  Big Top's actual rates change, or the report will quietly go stale again
+  (same failure mode, just less likely since there's no browser/selector to
+  break).
 - **Storage King Basildon** — loads the "select a size" → "your price" quote
   flow. All sizes' prices render in one page load, no per-size form
   submission needed.

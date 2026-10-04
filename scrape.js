@@ -369,28 +369,43 @@ async function storageKing(ctx) {
   }
 }
 
-async function bigTop(ctx) {
-  const page = await ctx.newPage();
-  for (const url of ['https://www.bigtopselfstorage.com/reserve', 'https://www.bigtopselfstorage.com/pricing']) {
-    try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await acceptCookies(page);
-      await settle(page);
-      dump('bigtop-' + url.split('/').pop(), await page.evaluate(() => document.body.innerText));
-      const cards = await extractPriceCards(page);
-      for (const c of cards) {
-        if (!c.prices.length) continue;
-        OUT.observations.push({
-          competitor: 'Big Top (own)', metric: 'unit', size_sqft: c.size_sqft,
-          rack_rate: c.prices.length > 1 ? Math.max(...c.prices) : null,
-          offer_rate: Math.min(...c.prices), per: c.per || '', promo: c.promo, source: url, raw: c.text,
-        });
-      }
-    } catch (e) {
-      OUT.warnings.push(`Big Top ${url}: ${String(e).split('\n')[0]}`);
+// Big Top's own /reserve + /pricing pages switched (~2026-09-26 to 09-29) to
+// gating all prices behind a lead-capture form -- extractPriceCards() found
+// zero cards there and the old scrape silently went empty with no warning
+// (see README "Big Top: own-site rate-card feed" section). Rather than
+// scrape-and-click a form on our OWN site, Big Top now reads a first-party
+// JSON rate card instead: no bot-detection risk, no selector breakage, and
+// it's data we already control end-to-end.
+//
+// BIGTOP_PRICE_CARD_URL: set via env var once the real Lovable-backed
+// endpoint exists (e.g. https://www.bigtopselfstorage.com/api/price-card.json).
+// Defaults to a repo-local mock (mock/price-card.json via raw.githubusercontent)
+// so the pipeline runs end-to-end today; swap the env var when the real one
+// ships -- no other code change needed.
+const BIGTOP_PRICE_CARD_URL = process.env.BIGTOP_PRICE_CARD_URL ||
+  'https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json';
+
+async function bigTop() {
+  try {
+    const res = await fetch(BIGTOP_PRICE_CARD_URL, { signal: AbortSignal.timeout(20000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const card = await res.json();
+    dump('bigtop-price-card', JSON.stringify(card, null, 2));
+    if (!Array.isArray(card.units) || !card.units.length) {
+      throw new Error('price card had no units[]');
     }
+    for (const u of card.units) {
+      OUT.observations.push({
+        competitor: 'Big Top (own)', metric: 'unit', size_sqft: u.size_sqft,
+        rack_rate: u.standard_rate_gbp_per_week ?? null,
+        offer_rate: u.offer_rate_gbp_per_week ?? u.standard_rate_gbp_per_week ?? null,
+        per: 'week', promo: u.promo || '', source: BIGTOP_PRICE_CARD_URL,
+        raw: JSON.stringify(u),
+      });
+    }
+  } catch (e) {
+    OUT.warnings.push(`Big Top price card: ${String(e.message || e).split('\n')[0]}`);
   }
-  await page.close();
 }
 
 async function makeSpace(ctx) {
@@ -441,10 +456,17 @@ async function makeSpace(ctx) {
   // regexes anchored on the labels are used, not generic £/week patterns.
   // Full union of every size seen across competitors. Sizes Make Space doesn't
   // stock fail fast ("size option not found") and are skipped — harmless.
-  const MS_SIZES = ['10 sq ft', '15 sq ft', '16 sq ft', '20 sq ft', '25 sq ft', '30 sq ft', '35 sq ft',
-    '40 sq ft', '45 sq ft', '50 sq ft', '55 sq ft', '60 sq ft', '70 sq ft', '75 sq ft', '100 sq ft',
-    '125 sq ft', '130 sq ft', '135 sq ft', '150 sq ft', '175 sq ft', '180 sq ft', '200 sq ft',
-    '250 sq ft', '260 sq ft']; // 24 sizes — attempt all
+  // Confirmed 2026-10-04 (live DOM check): Make Space's Billericay household
+  // quote carousel (.room-sizes-slider) stocks exactly these 13 sizes -- no
+  // more, no less. The old 24-size list was the union of every OTHER
+  // competitor's sizes and included 11 sizes Make Space never carried (15,
+  // 30, 40, 45, 55, 60, 70, 130, 135, 180, 260 sq ft); those always failed
+  // with "size option not found" and inflated the warnings list every run,
+  // masking real failures. Re-verify by loading the quote page, accepting
+  // cookies, and reading `.room-name` elements' innerText if Make Space ever
+  // changes their stock.
+  const MS_SIZES = ['10 sq ft', '16 sq ft', '20 sq ft', '25 sq ft', '35 sq ft', '50 sq ft',
+    '75 sq ft', '100 sq ft', '125 sq ft', '150 sq ft', '175 sq ft', '200 sq ft', '250 sq ft']; // 13 real sizes
   for (const sizeLabel of MS_SIZES) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -456,8 +478,12 @@ async function makeSpace(ctx) {
       let sized = false;
       try { await sizeEl.click({ timeout: 4000 }); sized = true; }
       catch (e) {
-        // The card may be off-screen in the carousel — page through it and retry.
-        for (let n = 0; n < 5 && !sized; n++) {
+        // The card may be off-screen in the carousel — page through it and
+        // retry. Confirmed 2026-10-04: the carousel's "next" button moves
+        // the slider by a fraction of a card width, not a full card per
+        // click, so reaching the last-position card (20/250 sq ft) needs
+        // ~10 clicks, not 5 — bumped to 15 with headroom.
+        for (let n = 0; n < 15 && !sized; n++) {
           try { await page.locator('button:has-text("›"), .flickity-button.next, [aria-label="Next"]').first().click({ timeout: 1500 }); } catch (e2) { break; }
           await page.waitForTimeout(300);
           try { await sizeEl.click({ timeout: 1500 }); sized = true; } catch (e3) {}
@@ -527,7 +553,7 @@ async function makeSpace(ctx) {
   if (RUN.shurgard) await withBudget('Shurgard', 180000, () => shurgard(ctx));
   if (RUN.storageking) await withBudget('Storage King', 420000, () => storageKing(ctx));
   if (RUN.makespace) await withBudget('Make Space', 1020000, () => makeSpace(ctx)); // 24 sizes; offered ~40s, not-offered fail fast
-  if (RUN.bigtop) await withBudget('Big Top', 180000, () => bigTop(ctx));
+  if (RUN.bigtop) await withBudget('Big Top', 30000, () => bigTop());
   Object.entries(RUN).filter(([, v]) => !v).forEach(([k]) => OUT.warnings.push(`${k}: ON HOLD (testing) — not run this sweep.`));
   await browser.close().catch(() => {});
 
