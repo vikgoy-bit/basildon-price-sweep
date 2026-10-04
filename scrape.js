@@ -374,16 +374,18 @@ async function storageKing(ctx) {
 // zero cards there and the old scrape silently went empty with no warning
 // (see README "Big Top: own-site rate-card feed" section). Rather than
 // scrape-and-click a form on our OWN site, Big Top now reads a first-party
-// JSON rate card instead: no bot-detection risk, no selector breakage, and
-// it's data we already control end-to-end.
+// JSON feed instead: no bot-detection risk, no selector breakage, and it's
+// data we already control end-to-end.
 //
-// BIGTOP_PRICE_CARD_URL: set via env var once the real Lovable-backed
-// endpoint exists (e.g. https://www.bigtopselfstorage.com/api/price-card.json).
-// Defaults to a repo-local mock (mock/price-card.json via raw.githubusercontent)
-// so the pipeline runs end-to-end today; swap the env var when the real one
-// ships -- no other code change needed.
+// Live since 2026-10-04: reuses the SAME public, no-auth-key endpoint built
+// for the Retell voice AI (confirmed working, no separate credential or
+// rate-limit concern raised by Vikas). Returns monthly prices + a live
+// units-available count, 5-min cache, Storeganise-backed with a snapshot
+// fallback on their end -- so this is about as reliable a feed as Big Top's
+// own infra gets. BIGTOP_PRICE_CARD_URL env var can override (e.g. point at
+// mock/price-card.json for offline testing) but defaults to the real thing.
 const BIGTOP_PRICE_CARD_URL = process.env.BIGTOP_PRICE_CARD_URL ||
-  'https://raw.githubusercontent.com/vikgoy-bit/basildon-price-sweep/main/mock/price-card.json';
+  'https://bigtopselfstorage.com/api/public/rex/pricing';
 
 async function bigTop() {
   try {
@@ -391,20 +393,24 @@ async function bigTop() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const card = await res.json();
     dump('bigtop-price-card', JSON.stringify(card, null, 2));
-    if (!Array.isArray(card.units) || !card.units.length) {
-      throw new Error('price card had no units[]');
+    if (!Array.isArray(card.sizes) || !card.sizes.length) {
+      throw new Error('price feed had no sizes[]');
     }
-    for (const u of card.units) {
+    // Real endpoint is monthly; this report (and every other competitor in
+    // it) is weekly, inc VAT -- convert using calendar months/year, same
+    // convention as everywhere else in this codebase (monthly * 12 / 52).
+    const toWeekly = m => (m == null ? null : Math.round((m * 12 / 52) * 100) / 100);
+    for (const s of card.sizes) {
       OUT.observations.push({
-        competitor: 'Big Top (own)', metric: 'unit', size_sqft: u.size_sqft,
-        rack_rate: u.standard_rate_gbp_per_week ?? null,
-        offer_rate: u.offer_rate_gbp_per_week ?? u.standard_rate_gbp_per_week ?? null,
-        per: 'week', promo: u.promo || '', source: BIGTOP_PRICE_CARD_URL,
-        raw: JSON.stringify(u),
+        competitor: 'Big Top (own)', metric: 'unit', size_sqft: s.size_sqft,
+        rack_rate: toWeekly(s.monthly_price),
+        offer_rate: toWeekly(s.offer_monthly_price ?? s.monthly_price),
+        per: 'week', promo: s.offer || '', source: BIGTOP_PRICE_CARD_URL,
+        raw: JSON.stringify(s),
       });
     }
   } catch (e) {
-    OUT.warnings.push(`Big Top price card: ${String(e.message || e).split('\n')[0]}`);
+    OUT.warnings.push(`Big Top price feed: ${String(e.message || e).split('\n')[0]}`);
   }
 }
 

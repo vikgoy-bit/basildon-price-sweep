@@ -23,26 +23,36 @@ them up.
   carousel-paging retry from 5 to 15 clicks — the last-position card ("20
   sq ft") needs ~10 "next" clicks to scroll into view since each click
   moves the slider a fraction of a card width, not a full card.
-- **Big Top (own site)** — reads a first-party JSON rate-card feed, NOT a
+- **Big Top (own site)** — reads a first-party JSON price feed, NOT a
   browser scrape of /reserve or /pricing. Those pages switched (~2026-09-26
   to 09-29) to gating all prices behind a lead-capture form; the old scraper
   found zero price cards there and silently stopped adding observations —
   no exception, no warning, so the report just quietly kept showing 5-day-
-  stale data (caught 2026-10-04). Rather than build a scraper against our
-  OWN site's lead-gen form (pointless bot-detection risk for data we already
-  own), Big Top now does a plain `fetch()` of a rate-card JSON:
-  `{ updated_at, units: [{ size_sqft, standard_rate_gbp_per_week,
-  offer_rate_gbp_per_week, promo }] }`. `BIGTOP_PRICE_CARD_URL` env var
-  points at it — defaults to a repo-local mock
-  (`mock/price-card.json`, read via raw.githubusercontent.com) that's
-  manually kept in sync until the real backend exists. **Vikas is building
-  this as a real endpoint on bigtopselfstorage.com via Lovable** — once
-  that ships, set `BIGTOP_PRICE_CARD_URL` to the real URL (repo secret or
-  workflow env) and delete `mock/price-card.json`; no other code change
-  needed. Until then, keep `mock/price-card.json` updated by hand whenever
-  Big Top's actual rates change, or the report will quietly go stale again
-  (same failure mode, just less likely since there's no browser/selector to
-  break).
+  stale data (caught 2026-10-04).
+
+  **Live since 2026-10-04:** rather than build a scraper against our OWN
+  site's lead-gen form (pointless bot-detection risk for data we already
+  own), Big Top does a plain `fetch()` of
+  `https://bigtopselfstorage.com/api/public/rex/pricing` — the SAME public,
+  no-auth-key endpoint already built for the Retell voice AI integration
+  (Vikas confirmed it's fine to reuse; no separate key/rate-limit setup
+  needed). Returns every unit size in one call: `monthly_price`,
+  `offer_monthly_price` + `offer` text, and a live `units_available` count
+  (not yet surfaced in the report, but preserved in each observation's
+  `raw` field for future use — e.g. a "selling out" alert). 5-minute cache
+  on their end, Storeganise-backed with a last-good-snapshot fallback, so
+  it's about as reliable as Big Top's own infra gets. The feed is monthly;
+  this report (like every other competitor in it) is weekly inc VAT, so
+  `scrape.js` converts via `monthly * 12 / 52` — verified against the
+  previous manually-scraped weekly rates (e.g. 25 sq ft: £73.67/mo → £17.00/
+  wk, exact match to the last known-good scrape).
+
+  `BIGTOP_PRICE_CARD_URL` env var overrides the URL if needed (e.g. for
+  offline testing against `mock/price-card.json`, kept in the repo from the
+  brief window before the real endpoint's URL was known — same `units[]`
+  shape as the old scraper, NOT the real endpoint's `sizes[]` shape, so it's
+  only usable by temporarily reverting the parsing logic, not a drop-in).
+
 - **Storage King Basildon** — loads the "select a size" → "your price" quote
   flow. All sizes' prices render in one page load, no per-size form
   submission needed.
