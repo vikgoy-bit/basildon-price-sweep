@@ -1,0 +1,65 @@
+{
+  "updated_at": "2026-10-04T12:00:00Z",
+  "units": [
+    {
+      "size_sqft": 25,
+      "standard_rate_gbp_per_week": 17,
+      "offer_rate_gbp_per_week": 8.5,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 35,
+      "standard_rate_gbp_per_week": 28.6,
+      "offer_rate_gbp_per_week": 14.3,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 50,
+      "standard_rate_gbp_per_week": 35.5,
+      "offer_rate_gbp_per_week": 17.75,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 85,
+      "standard_rate_gbp_per_week": 51.5,
+      "offer_rate_gbp_per_week": 25.75,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 100,
+      "standard_rate_gbp_per_week": 58.6,
+      "offer_rate_gbp_per_week": 29.3,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 125,
+      "standard_rate_gbp_per_week": 72.01,
+      "offer_rate_gbp_per_week": 36.01,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 150,
+      "standard_rate_gbp_per_week": 73.6,
+      "offer_rate_gbp_per_week": 36.8,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 175,
+      "standard_rate_gbp_per_week": 83.51,
+      "offer_rate_gbp_per_week": 41.76,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 250,
+      "standard_rate_gbp_per_week": 96.01,
+      "offer_rate_gbp_per_week": 48.01,
+      "promo": "£1/wk first 6 weeks"
+    },
+    {
+      "size_sqft": 300,
+      "standard_rate_gbp_per_week": 186.01,
+      "offer_rate_gbp_per_week": 186.01,
+      "promo": ""
+    }
+  ]
+}
