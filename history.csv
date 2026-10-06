@@ -2701,3 +2701,48 @@ date,competitor,metric,size_sqft,rack_rate_pw_gbp,offer_rate_pw_gbp,promo_text,s
 2026-10-05,Storage King Basildon,manual_quote,225,156.0,78.0,"50% off your first 2 months, billed monthly",https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon,"Daily Actions sweep (VAT inc, excl padlock/insurance)",2026-10-05T05:00:37Z
 2026-10-05,Storage King Basildon,manual_quote,250,158.0,79.0,"50% off your first 2 months, billed monthly",https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon,"Daily Actions sweep (VAT inc, excl padlock/insurance)",2026-10-05T05:00:37Z
 2026-10-05,Storage King Basildon,manual_quote,300,186.0,93.0,"50% off your first 2 months, billed monthly",https://www.storageking.co.uk/get-a-quote/select-a-size/?store=basildon,"Daily Actions sweep (VAT inc, excl padlock/insurance)",2026-10-05T05:00:37Z
+2026-10-06,Shurgard Basildon,unit,35,30.46,15.23,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,75,48.69,24.46,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,50,36.46,18.23,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,20,15.69,8.08,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,20,16.62,8.31,50% off first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,25,16.85,8.54,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,30,27.92,14.08,50% off first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,55,39,19.62,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,100,58.38,29.31,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,130,67.38,50.77,50% off first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,150,,73.62,50% off first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,180,,78.69,£1 first month; special rate ends 08/10/2026,https://www.shurgard.com/en-gb/api/stores/73/units,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,35,,30.46,35 sq ft £1 FIRST MONTH'S RENT £30,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,35,,15.23,35 sq ft £1 FIRST MONTH'S RENT £30,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,75,,48.69,75 sq ft £1 FIRST MONTH'S RENT £48,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,75,,24.46,75 sq ft £1 FIRST MONTH'S RENT £48,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,50,,36.46,50 sq ft £1 FIRST MONTH'S RENT £36,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,50,,18.23,50 sq ft £1 FIRST MONTH'S RENT £36,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,20,,15.69,Locker 20 sq ft £1 FIRST MONTH'S RENT £15,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,20,,8.08,Locker 20 sq ft £1 FIRST MONTH'S RENT £15,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,20,,16.62,20 sq ft 50% FIRST MONTH'S RENT £16,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Shurgard Basildon,unit,20,,8.31,20 sq ft 50% FIRST MONTH'S RENT £16,https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,10,17.98,16.98,50% off (£8.49/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,16,21.98,17.98,50% off (£8.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,25,35.98,28.98,50% off (£14.49/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,35,40.98,36.98,50% off (£18.49/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,50,49.98,39.98,50% off (£19.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,75,67.98,57.98,50% off (£28.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,100,84.98,84.98,50% off (£42.49/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,125,106.98,91.98,50% off (£45.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,150,104.98,83.98,50% off (£41.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,175,126.98,126.98,50% off (£63.49/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,200,150.98,143.98,50% off (£71.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Make Space (Billericay),quote_after_test_form,250,165.98,165.98,50% off (£82.99/wk) for first 12 weeks,https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3,daily Actions sweep,2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,25,17.0,8.5,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,35,30.4,15.2,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,50,36.4,18.2,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,85,51.5,25.75,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,100,58.6,29.3,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,125,72.0,36.0,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,150,73.6,36.8,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,175,83.5,41.75,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,250,96.0,48.0,50% off after 6 weeks for £1,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,300,186.0,186.0,,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
+2026-10-06,Big Top (own),unit,850,501.0,501.0,,https://bigtopselfstorage.com/api/public/rex/pricing,"daily Actions sweep (live site, hybrid v4)",2026-10-06T05:47:53Z
