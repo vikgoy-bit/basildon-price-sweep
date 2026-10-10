@@ -240,7 +240,19 @@ def append_prebuilt(json_path, source_label):
 
 
 def load_grid():
-    """size -> comp -> (offer, rack_or_None, promo_text) for the latest date.
+    """size -> comp -> (offer, rack_or_None, promo_text, last_seen_date) for
+    the latest date.
+
+    last_seen_date (added 2026-10-10) lets build_email() flag entries that
+    haven't had a FRESH scrape in a while, even though this function will
+    always return something for them (history.csv rows never expire or get
+    deleted -- see the carry-forward design note on append_prebuilt() and
+    the module docstring). Needed because a competitor can permanently stop
+    offering a size (observed: Shurgard Basildon stopped listing anything
+    above 180 sq ft sometime after 2026-10-02) and the grid would otherwise
+    silently keep showing that size's LAST price forever with no visual
+    difference from a genuinely-fresh-today price -- indistinguishable from
+    a real, current offer unless someone manually checks history.csv.
 
     Row-order tiebreak (fixed 2026-09-12, upgraded 2026-09-16): when a
     (competitor, size) has more than one row on the SAME date -- e.g. Big
@@ -274,8 +286,8 @@ def load_grid():
             continue
         key = (r['competitor'], float(r['size_sqft']))
         rack = float(r['rack_rate_pw_gbp']) if r['rack_rate_pw_gbp'] else None
-        # remember the newest non-empty standard rate so a bare daily sweep row
-        # (offer only) doesn't wipe the std value captured earlier.
+        # remember the newest non-empty standard rate so a bare daily sweep
+        # row (offer only) doesn't wipe the std value captured earlier.
         if rack is not None and (key not in sticky_rack or r['date'] >= sticky_rack[key][0]):
             sticky_rack[key] = (r['date'], rack)
         # tiebreak_key: prefer the real scraped_at timestamp (empty string
@@ -288,10 +300,10 @@ def load_grid():
         if cur is None or val[0] > cur[0] or (val[0] == cur[0] and val[1] > cur[1]):
             latest[key] = val
     grid = defaultdict(dict)
-    for (comp, size), (_, _, price, rack, promo) in latest.items():
+    for (comp, size), (last_seen, _, price, rack, promo) in latest.items():
         if rack is None and (comp, size) in sticky_rack:
             rack = sticky_rack[(comp, size)][1]  # inherit last known standard rate
-        grid[size][comp] = (price, rack, promo)
+        grid[size][comp] = (price, rack, promo, last_seen)
     return grid
 
 
@@ -447,13 +459,28 @@ def build_recommendations(grid):
         bt_entry = entries.get('Big Top (own)')
         if bt_entry is None:
             continue
-        bt_offer, bt_rack, _ = bt_entry
+        bt_offer, bt_rack, _, _ = bt_entry
         bt_standard = bt_rack if bt_rack is not None else bt_offer
 
+        # Staleness guard (added 2026-10-10): a rival's own last_seen date
+        # might be weeks old if they've stopped offering that size (e.g.
+        # Shurgard Basildon dropped everything above 180 sq ft after
+        # 2026-10-02) -- history.csv rows never expire, so without this a
+        # "raise your rate, you're cheaper than Shurgard" suggestion could
+        # be driven entirely by a price Shurgard no longer even has
+        # available. Same 14-day cutoff as the grid's visual stale flag.
         rival_standards = {}
-        for comp, (offer, rack, _) in entries.items():
+        for comp, (offer, rack, _, last_seen) in entries.items():
             if comp == 'Big Top (own)':
                 continue
+            if last_seen:
+                try:
+                    days_old = (datetime.strptime(TODAY, '%Y-%m-%d').date()
+                                - datetime.strptime(last_seen, '%Y-%m-%d').date()).days
+                    if days_old >= 14:
+                        continue
+                except ValueError:
+                    pass
             rival_standards[comp] = rack if rack is not None else offer
         if not rival_standards:
             continue
@@ -603,6 +630,26 @@ def render_freshness_html(freshness):
 def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_html='', freshness_html=''):
     grid1yr = grid1yr or {}
     sizes = sorted(set(grid.keys()) | set(grid1yr.keys()))
+    # Staleness cutoff for individual grid cells (added 2026-10-10): a size
+    # a competitor has stopped offering (e.g. Shurgard Basildon dropped
+    # everything above 180 sq ft sometime after 2026-10-02) would otherwise
+    # carry its last price forward FOREVER with no visual difference from a
+    # genuinely-fresh-today price (history.csv rows never expire -- see
+    # load_grid()'s docstring). >=14 days since last_seen greys the cell out
+    # and appends "(last seen DATE)" instead of silently showing a
+    # confident-looking but possibly long-gone price.
+    STALE_CELL_DAYS = 14
+    today_date = datetime.strptime(TODAY, '%Y-%m-%d').date()
+
+    def cell_days_stale(last_seen):
+        if not last_seen:
+            return None
+        try:
+            seen_date = datetime.strptime(last_seen, '%Y-%m-%d').date()
+        except ValueError:
+            return None
+        return (today_date - seen_date).days
+
     h1 = ('<tr><th rowspan="2" style="padding:6px 8px;color:#1F3864;text-align:left;'
           'border-bottom:2px solid #1F3864;vertical-align:bottom;">Size (sq ft)</th>')
     for comp, name, mark, dark, light in GROUPS:
@@ -636,18 +683,29 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_ht
                     cells += _yr_cells(grid1yr.get(size), base)
                 tds += cells
                 continue
-            price, rack, promo = entry
+            price, rack, promo, last_seen = entry
+            days_stale = cell_days_stale(last_seen)
+            is_stale_cell = days_stale is not None and days_stale >= STALE_CELL_DAYS
             hot = comp != 'Big Top (own)' and bt is not None and price < bt
             hot_style = 'color:#C00000;font-weight:bold;' if hot else ''
+            if is_stale_cell:
+                # Override any "hot" red styling -- a >=14-day-old price
+                # being below Big Top's current rate isn't a trustworthy
+                # competitive signal, it may no longer even be offered.
+                hot_style = 'color:#999;font-style:italic;'
             if rack is None or abs(rack - price) < 0.01:
                 # single price (rate card / no separate standard): show under Standard
                 cells = dash + '<td style="%s%s">£%.2f</td>' % (base, hot_style or 'font-weight:bold;', price)
             else:
                 cells = ('<td style="%s%s">£%.2f</td>' % (base, hot_style, price)
                          + '<td style="%s%s">£%.2f</td>' % (base, hot_style, rack))
-            d, t = promo_cols(comp, promo)
+            if is_stale_cell:
+                d, t = promo_cols(comp, promo)
+                t = (t + ' ' if t else '') + f'(last seen {last_seen})'
+            else:
+                d, t = promo_cols(comp, promo)
             cells += '<td style="%sfont-size:11px;color:#444;">%s</td>' % (base, d)
-            cells += '<td style="%sfont-size:11px;color:#444;">%s</td>' % (base, t)
+            cells += '<td style="%sfont-size:11px;color:%s;">%s</td>' % (base, '#999' if is_stale_cell else '#444', t)
             if comp == 'Safestore Basildon':
                 cells += _yr_cells(grid1yr.get(size), base)
             tds += cells
@@ -708,7 +766,12 @@ def main():
                             f'(per {latest_shurgard_date}\'s sweep -- this is a rolling '
                             f'promo window, check it hasn\'t moved again before relying on it).')
     footnotes = [
-        '* Shurgard: swept daily; Discount/Duration parsed from the live web promo.',
+        '* Shurgard: swept daily; Discount/Duration parsed from the live web promo. A size '
+        'Shurgard stops listing keeps showing its last-known price (grid cells never '
+        'hide/disappear) but is greyed out with "(last seen DATE)" once 14+ days stale -- '
+        'see build_email()\'s STALE_CELL_DAYS logic, added 2026-10-10 after Shurgard quietly '
+        'dropped everything above 180 sq ft and the report kept showing those old prices '
+        'with no visual difference from a fresh one.',
         '** Storage King: swept daily as of 2026-08-26 (stealth Chromium, passes a one-time Cloudflare Turnstile checkbox — no CAPTCHA-solving). If a run is blocked or returns too few sizes to trust, the row is skipped and the last-known price carries forward instead.',
         '*** Safestore: swept daily as of 2026-08-26 via the full quote wizard with a marked test identity (stealth Chromium; robots.txt disallows these pages — an explicit, informed policy decision, see README). If every size comes back "call store" in one run (a block/rate-limit signature), that run is discarded and the last-known price carries forward instead.',
         '† Make Space (Billericay): swept daily; intro offers vary by unit — some sizes get no intro discount at all, so trust the per-size Discount cell, not a blanket headline.',
