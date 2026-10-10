@@ -504,33 +504,33 @@
       "metric": "unit",
       "size_sqft": 150,
       "rack_rate": 73.6,
-      "offer_rate": 36.8,
+      "offer_rate": 73.6,
       "per": "week",
-      "promo": "50% off after 6 weeks for £1",
+      "promo": "",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":150,\"monthly_price\":318.93,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":159.47,\"discount_percent\":50,\"offer\":\"50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £159.47/month (50% off the standard £318.93/month)\",\"units_available\":6}"
+      "raw": "{\"size_sqft\":150,\"monthly_price\":318.93,\"intro_price\":null,\"intro_weeks\":null,\"offer_monthly_price\":null,\"discount_percent\":null,\"offer\":null,\"pricing_summary\":\"£318.93/month\",\"units_available\":6}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 175,
-      "rack_rate": 83.5,
-      "offer_rate": 41.75,
+      "rack_rate": 76.25,
+      "offer_rate": 76.25,
       "per": "week",
-      "promo": "50% off after 6 weeks for £1",
+      "promo": "",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":175,\"monthly_price\":361.83,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":180.92,\"discount_percent\":50,\"offer\":\"50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £180.92/month (50% off the standard £361.83/month)\",\"units_available\":1}"
+      "raw": "{\"size_sqft\":175,\"monthly_price\":330.42,\"intro_price\":null,\"intro_weeks\":null,\"offer_monthly_price\":null,\"discount_percent\":null,\"offer\":null,\"pricing_summary\":\"£330.42/month\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 250,
-      "rack_rate": 96,
-      "offer_rate": 48,
+      "rack_rate": 158,
+      "offer_rate": 158,
       "per": "week",
-      "promo": "50% off after 6 weeks for £1",
+      "promo": "",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":250,\"monthly_price\":416,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":208,\"discount_percent\":50,\"offer\":\"50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £208.00/month (50% off the standard £416.00/month)\",\"units_available\":1}"
+      "raw": "{\"size_sqft\":250,\"monthly_price\":684.67,\"intro_price\":null,\"intro_weeks\":null,\"offer_monthly_price\":null,\"discount_percent\":null,\"offer\":null,\"pricing_summary\":\"£684.67/month\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
