@@ -26,60 +26,11 @@ true
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
 0126 891 9015
-Office: closed now
+Office: closed now, open at 9.00
 Access: closed now, open at 7.00
- 
-All
-< 40 sq ft
-For boxes & small furniture
-40 - 70 sq ft
-For a studio flat
-70 - 100 sq ft
-For a 2 bedroom flat
-100 - 130 sq ft
-For a 2 bedroom house
-> 130 sq ft
-For a 3 bedroom house or larger
-DISPLAY BY
-sq ft
-m²
-35 sq ft
-£1
-FIRST MONTH'S RENT
-£30.46/week
-£15.23/week
- Special Price
-Most popular
-50 sq ft
-£1
-FIRST MONTH'S RENT
-£38.31/week
-£19.15/week
- Special Price
-Most popular
-75 sq ft
-£1
-FIRST MONTH'S RENT
-£49.85/week
-£24.92/week
- Special Price
-Most popular
-Locker
-20 sq ft
-£1
-FIRST MONTH'S RENT
-£15.69/week
-£8.08/week
- Special Price
-Not sure what size?
-Size help
-20 sq ft
-£1
-FIRST MONTH'S RENT
-£16.62/week
-£8.31/week
- Special Price
-See all 12 units
+
+Error
+
 Why choose Shurgard
 
 Safe & secure
@@ -110,8 +61,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sun
-7.00-21.00
 Mon
 7.00-21.00
 Tue
@@ -123,13 +72,13 @@ Thu
 Fri
 7.00-21.00
 Sat
+7.00-21.00
+Sun
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sun
-Closed
 Mon
 9.00-17.30
 Tue
@@ -141,12 +90,12 @@ Thu
 Fri
 9.00-17.30
 Sat
+Closed
+Sun
 Closed
 Phone hours
 For phone assistance
 0126 891 9015
-Sun
-9.00-18.00
 Mon
 8.00-20.00
 Tue
@@ -158,6 +107,8 @@ Thu
 Fri
 8.00-20.00
 Sat
+9.00-18.00
+Sun
 9.00-18.00
 Self storage units in Basildon
 
@@ -239,6 +190,30 @@ true
  
 true
 4.9/5 - 259 reviews
+Keith Phipps
+Shurgard Basildon
+true
+ 
+true
+ 
+true
+ 
+true
+ 
+true
+Sarah was amazing helping us find the right unit, very helpful and professional. Credit to the company. Thanks sarah
+Kj
+Shurgard Basildon
+true
+ 
+true
+ 
+true
+ 
+true
+ 
+true
+Fantastic, friendly, knowledgeable chap called Robbie, who couldn't have been more helpful. On numerous fronts . Thank you Shurgard
 Kenny
 Shurgard Basildon
 true
@@ -251,30 +226,6 @@ true
  
 true
 Great storage facility, Robbie has been very helpful in deciding which size I need and making sure that I’ll be able to access the door and lifts properly via the app. Will be using this place in the near future again
-Rakesh Patel
-Shurgard Basildon
-true
- 
-true
- 
-true
- 
-true
- 
-true
-Robbie in Basildon is just a superstar. Clearly explained our options as we were considering changing units. He was very polite and professional throughout. Thanks Robbie, you’re a gem!
-Louise Horsfall
-Shurgard Basildon
-true
- 
-true
- 
-true
- 
-true
- 
-true
-Staff were extremely helpful and friendly. They showed us how the security and systems work and the types of locker available so we could make the right choice. Prices are competitive and there is good flexibility. Really pleased we found them.
 Read all reviews for Shurgard
 Other storage units near me
 Romford
