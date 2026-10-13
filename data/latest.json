@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-12",
+  "date": "2026-10-13",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -16,18 +16,6 @@
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
-      "size_sqft": 75,
-      "rack_rate": 49.85,
-      "offer_rate": 24.92,
-      "welcome_rate": 1,
-      "per": "week",
-      "promo": "£1 first month; special rate ends 15/10/2026",
-      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
-      "raw": "75 sq ft id=2196"
-    },
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
       "size_sqft": 50,
       "rack_rate": 38.31,
       "offer_rate": 19.15,
@@ -36,6 +24,18 @@
       "promo": "£1 first month; special rate ends 15/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "50 sq ft id=2188"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 75,
+      "rack_rate": 49.85,
+      "offer_rate": 24.92,
+      "welcome_rate": 1,
+      "per": "week",
+      "promo": "£1 first month; special rate ends 15/10/2026",
+      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
+      "raw": "75 sq ft id=2196"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -144,6 +144,116 @@
       "promo": "£1 first month; special rate ends 15/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "180 sq ft id=2749"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 35,
+      "rack_rate": null,
+      "offer_rate": 30.46,
+      "per": "week",
+      "promo": "35 sq ft £1 FIRST MONTH'S RENT £30",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "35 sq ft £1 FIRST MONTH'S RENT £30.46/week £15.23/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 35,
+      "rack_rate": null,
+      "offer_rate": 15.23,
+      "per": "week",
+      "promo": "35 sq ft £1 FIRST MONTH'S RENT £30",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "35 sq ft £1 FIRST MONTH'S RENT £30.46/week £15.23/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 50,
+      "rack_rate": null,
+      "offer_rate": 38.31,
+      "per": "week",
+      "promo": "50 sq ft £1 FIRST MONTH'S RENT £38",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £19.15/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 50,
+      "rack_rate": null,
+      "offer_rate": 19.15,
+      "per": "week",
+      "promo": "50 sq ft £1 FIRST MONTH'S RENT £38",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £19.15/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 75,
+      "rack_rate": null,
+      "offer_rate": 49.85,
+      "per": "week",
+      "promo": "75 sq ft £1 FIRST MONTH'S RENT £49",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "75 sq ft £1 FIRST MONTH'S RENT £49.85/week £24.92/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 75,
+      "rack_rate": null,
+      "offer_rate": 24.92,
+      "per": "week",
+      "promo": "75 sq ft £1 FIRST MONTH'S RENT £49",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "75 sq ft £1 FIRST MONTH'S RENT £49.85/week £24.92/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 20,
+      "rack_rate": null,
+      "offer_rate": 15.69,
+      "per": "week",
+      "promo": "Locker 20 sq ft £1 FIRST MONTH'S RENT £15",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "Locker 20 sq ft £1 FIRST MONTH'S RENT £15.69/week £8.08/week Special Price"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 20,
+      "rack_rate": null,
+      "offer_rate": 8.08,
+      "per": "week",
+      "promo": "Locker 20 sq ft £1 FIRST MONTH'S RENT £15",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "Locker 20 sq ft £1 FIRST MONTH'S RENT £15.69/week £8.08/week Special Price"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 20,
+      "rack_rate": null,
+      "offer_rate": 16.62,
+      "per": "week",
+      "promo": "20 sq ft £1 FIRST MONTH'S RENT £16",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "20 sq ft £1 FIRST MONTH'S RENT £16.62/week £8.31/week Special Price"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 20,
+      "rack_rate": null,
+      "offer_rate": 8.31,
+      "per": "week",
+      "promo": "20 sq ft £1 FIRST MONTH'S RENT £16",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "20 sq ft £1 FIRST MONTH'S RENT £16.62/week £8.31/week Special Price"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -332,7 +442,7 @@
       "per": "week",
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":25,\"monthly_price\":73.67,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":36.84,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £36.84/month (50% off the standard £73.67/month)\",\"units_available\":4}"
+      "raw": "{\"size_sqft\":25,\"monthly_price\":73.67,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":36.84,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £36.84/month (50% off the standard £73.67/month)\",\"units_available\":3}"
     },
     {
       "competitor": "Big Top (own)",
