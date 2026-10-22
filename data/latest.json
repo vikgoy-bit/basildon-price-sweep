@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-21",
+  "date": "2026-10-22",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -9,7 +9,7 @@
       "offer_rate": 15.69,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "35 sq ft id=2241"
     },
@@ -21,7 +21,7 @@
       "offer_rate": 19.15,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "50 sq ft id=2188"
     },
@@ -33,7 +33,7 @@
       "offer_rate": 24.92,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "75 sq ft id=2196"
     },
@@ -45,7 +45,7 @@
       "offer_rate": 8.08,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "Locker 20 sq ft id=3079"
     },
@@ -57,7 +57,7 @@
       "offer_rate": 8.54,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "25 sq ft id=2244"
     },
@@ -69,7 +69,7 @@
       "offer_rate": 10.62,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "20 sq ft id=2266"
     },
@@ -81,7 +81,7 @@
       "offer_rate": 14.31,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "30 sq ft id=2231"
     },
@@ -93,7 +93,7 @@
       "offer_rate": 20.54,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "55 sq ft id=2747"
     },
@@ -105,7 +105,7 @@
       "offer_rate": 22.62,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "65 sq ft id=2232"
     },
@@ -113,11 +113,11 @@
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 100,
-      "rack_rate": 60,
-      "offer_rate": 30.23,
+      "rack_rate": 51.46,
+      "offer_rate": 25.85,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "100 sq ft id=2185"
     },
@@ -125,11 +125,11 @@
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 130,
-      "rack_rate": 67.38,
-      "offer_rate": 50.77,
+      "rack_rate": 66.23,
+      "offer_rate": 49.85,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "130 sq ft id=2220"
     },
@@ -138,10 +138,10 @@
       "metric": "unit",
       "size_sqft": 150,
       "rack_rate": null,
-      "offer_rate": 73.62,
+      "offer_rate": 70.15,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 22/10/2026",
+      "promo": "£1 first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "150 sq ft id=2750"
     },
@@ -150,10 +150,10 @@
       "metric": "unit",
       "size_sqft": 180,
       "rack_rate": null,
-      "offer_rate": 78.69,
-      "welcome_rate": 39.34615384615388,
+      "offer_rate": 80.31,
+      "welcome_rate": 40.153846153846196,
       "per": "week",
-      "promo": "50% off first month; special rate ends 22/10/2026",
+      "promo": "50% off first month; special rate ends 29/10/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "180 sq ft id=2749"
     },
@@ -509,7 +509,7 @@
       "per": "week",
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":125,\"monthly_price\":286,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":214.5,\"discount_percent\":25,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £214.50/month (25% off the standard £286.00/month)\",\"units_available\":9}"
+      "raw": "{\"size_sqft\":125,\"monthly_price\":286,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":214.5,\"discount_percent\":25,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £214.50/month (25% off the standard £286.00/month)\",\"units_available\":8}"
     },
     {
       "competitor": "Big Top (own)",
