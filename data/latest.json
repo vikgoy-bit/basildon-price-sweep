@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-22",
+  "date": "2026-10-23",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -454,7 +454,7 @@
       "per": "week",
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":25,\"monthly_price\":73.67,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":36.84,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £36.84/month (50% off the standard £73.67/month)\",\"units_available\":4}"
+      "raw": "{\"size_sqft\":25,\"monthly_price\":73.67,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":36.84,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £36.84/month (50% off the standard £73.67/month)\",\"units_available\":3}"
     },
     {
       "competitor": "Big Top (own)",
@@ -477,17 +477,6 @@
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
       "raw": "{\"size_sqft\":50,\"monthly_price\":165.75,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":82.88,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £82.88/month (50% off the standard £165.75/month)\",\"units_available\":7}"
-    },
-    {
-      "competitor": "Big Top (own)",
-      "metric": "unit",
-      "size_sqft": 85,
-      "rack_rate": 51.5,
-      "offer_rate": 25.75,
-      "per": "week",
-      "promo": "Up to 50% off after 6 weeks for £1",
-      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":85,\"monthly_price\":223.16,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":111.58,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £111.58/month (50% off the standard £223.16/month)\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
