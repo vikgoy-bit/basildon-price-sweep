@@ -31,7 +31,7 @@
       "discount_percent": 50,
       "offer": "Up to 50% off after 6 weeks for £1",
       "pricing_summary": "First 6 weeks £1, then £82.88/month (50% off the standard £165.75/month)",
-      "units_available": 7
+      "units_available": 6
     },
     {
       "size_sqft": 100,
@@ -42,7 +42,7 @@
       "discount_percent": 50,
       "offer": "Up to 50% off after 6 weeks for £1",
       "pricing_summary": "First 6 weeks £1, then £130.87/month (50% off the standard £261.73/month)",
-      "units_available": 2
+      "units_available": 3
     },
     {
       "size_sqft": 125,
@@ -100,5 +100,5 @@
       "units_available": 1
     }
   ],
-  "generated_at": "2026-10-23T05:48:31.595Z"
+  "generated_at": "2026-10-24T05:48:26.264Z"
 }
