@@ -122,6 +122,45 @@ them up.
   falls back to the last-known price, exactly like a blocked/failed
   in-Actions scrape would.
 
+  **Incident (2026-10-23 to 2026-10-28): both scrapes silently dead because
+  Xvfb went missing from the automation host.** Storage King and Safestore
+  both run `headless=False` (deliberate — needed for the anti-bot evasion
+  work documented elsewhere in this README) via `Xvfb`, started inline by
+  `push-safestore-storageking-to-repo.sh`. At some point between the
+  2026-10-21 and 2026-10-23 runs, the system `xvfb` apt package disappeared
+  from the automation host (root cause unconfirmed — most likely a
+  base-image/container refresh that doesn't persist manually-apt-installed
+  packages across rebuilds; the host has no root/sudo to just reinstall it).
+  Every run from 10-23 to 10-28 failed immediately at browser launch
+  (`Missing X server or $DISPLAY`), which both scripts' existing retry loops
+  correctly caught and turned into generic "fetch failed after retries"
+  warnings — safe (no fabricated data) but **silent and easy to mistake for
+  a site-side block**, since the actual Playwright stderr with the real
+  cause wasn't surfaced anywhere Vikas would see it. Caught 2026-10-28 when
+  Vikas noticed both competitors returning no results in the report.
+
+  **Fix:** vendored a user-space Xvfb (no root needed — `apt-get download`
+  fetches the `.deb` without installing; `dpkg-deb -x` extracts it to a
+  plain directory; its handful of runtime `.so` deps were fetched/extracted
+  the same way) under `/opt/data/profiles/alex/tools/xvfb-vendor/`. One
+  wrinkle: Xvfb hard-codes shelling out to the literal path `/usr/bin/xkbcomp`
+  for keymap compilation (confirmed via `strings`/`-help` — not overridable
+  via `PATH` or any env var), and `/usr/bin/` isn't writable without root
+  either. Worked around with a vendored `proot` (ptrace-based userspace path
+  remapping — `unshare --user` is blocked by this container's seccomp
+  policy, so a real mount-namespace bind wasn't available) that transparently
+  redirects just that one exec to a vendored `xkbcomp` binary.
+  `push-safestore-storageking-to-repo.sh` now prefers a real system `Xvfb`
+  if `command -v Xvfb` ever succeeds again (e.g. a future maintainer gets
+  real root and does `apt-get install xvfb` properly — strongly prefer that
+  over this workaround if it's ever an option), falling back to the vendored
+  proot+Xvfb otherwise, and now fails loudly with a clear message (waits for
+  the X socket to actually appear, up to ~6s) instead of silently feeding
+  both scrapers a dead display for the next 10-15 minutes. Live-verified
+  end-to-end post-fix: Storage King 21/21 observations, Safestore full
+  26-submission sweep 20/26 (`ok` outcome, cooldown re-armed), both pushed
+  to `main` via the normal unmodified script path.
+
   **Why the daily Safestore scrape routes through a Tailscale exit node
   (2026-09-16, informed decision, not an oversight):**
   Even after moving off GitHub Actions' runner IPs (fix above), Safestore's
