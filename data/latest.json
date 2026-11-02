@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-01",
+  "date": "2026-11-02",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -460,12 +460,12 @@
       "competitor": "Big Top (own)",
       "metric": "unit",
       "size_sqft": 35,
-      "rack_rate": 31.3,
-      "offer_rate": 15.65,
+      "rack_rate": 32.1,
+      "offer_rate": 16.05,
       "per": "week",
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":35,\"monthly_price\":135.63,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":67.82,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £67.82/month (50% off the standard £135.63/month)\",\"units_available\":3}"
+      "raw": "{\"size_sqft\":35,\"monthly_price\":139.1,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":69.55,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)\",\"units_available\":3}"
     },
     {
       "competitor": "Big Top (own)",
