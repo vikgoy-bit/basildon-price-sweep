@@ -1,18 +1,6 @@
 {
-  "date": "2026-11-06",
+  "date": "2026-11-07",
   "observations": [
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
-      "size_sqft": 35,
-      "rack_rate": 32.08,
-      "offer_rate": 16.15,
-      "welcome_rate": 1,
-      "per": "week",
-      "promo": "£1 first month; special rate ends 12/11/2026",
-      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
-      "raw": "35 sq ft id=2241"
-    },
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
@@ -24,6 +12,18 @@
       "promo": "£1 first month; special rate ends 12/11/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "50 sq ft id=2188"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 35,
+      "rack_rate": 32.08,
+      "offer_rate": 16.15,
+      "welcome_rate": 1,
+      "per": "week",
+      "promo": "£1 first month; special rate ends 12/11/2026",
+      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
+      "raw": "35 sq ft id=2241"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -72,18 +72,6 @@
       "promo": "£1 first month; special rate ends 12/11/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "55 sq ft id=2747"
-    },
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
-      "size_sqft": 65,
-      "rack_rate": 44.31,
-      "offer_rate": 22.15,
-      "welcome_rate": 1,
-      "per": "week",
-      "promo": "£1 first month; special rate ends 12/11/2026",
-      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
-      "raw": "65 sq ft id=2232"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -148,28 +136,6 @@
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
-      "size_sqft": 35,
-      "rack_rate": null,
-      "offer_rate": 32.08,
-      "per": "week",
-      "promo": "35 sq ft £1 FIRST MONTH'S RENT £32",
-      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "35 sq ft £1 FIRST MONTH'S RENT £32.08/week £16.15/week Special Price Most popular"
-    },
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
-      "size_sqft": 35,
-      "rack_rate": null,
-      "offer_rate": 16.15,
-      "per": "week",
-      "promo": "35 sq ft £1 FIRST MONTH'S RENT £32",
-      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "35 sq ft £1 FIRST MONTH'S RENT £32.08/week £16.15/week Special Price Most popular"
-    },
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
       "size_sqft": 50,
       "rack_rate": null,
       "offer_rate": 38.31,
@@ -188,6 +154,28 @@
       "promo": "50 sq ft £1 FIRST MONTH'S RENT £38",
       "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
       "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £19.15/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 35,
+      "rack_rate": null,
+      "offer_rate": 32.08,
+      "per": "week",
+      "promo": "35 sq ft £1 FIRST MONTH'S RENT £32",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "35 sq ft £1 FIRST MONTH'S RENT £32.08/week £16.15/week Special Price Most popular"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 35,
+      "rack_rate": null,
+      "offer_rate": 16.15,
+      "per": "week",
+      "promo": "35 sq ft £1 FIRST MONTH'S RENT £32",
+      "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
+      "raw": "35 sq ft £1 FIRST MONTH'S RENT £32.08/week £16.15/week Special Price Most popular"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -534,7 +522,7 @@
     }
   ],
   "warnings": [
-    "Shurgard: API returned 12 units (full ladder).",
+    "Shurgard: API returned 11 units (full ladder).",
     "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
     "storageking: ON HOLD (testing) — not run this sweep."
   ]
