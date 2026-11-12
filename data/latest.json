@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-11",
+  "date": "2026-11-12",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -248,11 +248,11 @@
       "metric": "unit",
       "size_sqft": null,
       "rack_rate": null,
-      "offer_rate": 11.77,
+      "offer_rate": 7.85,
       "per": "week",
       "promo": "",
       "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "Storage units from £11.77 / week"
+      "raw": "Storage units from £7.85 / week"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -474,7 +474,7 @@
       "per": "week",
       "promo": "",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":150,\"monthly_price\":318.93,\"intro_price\":null,\"intro_weeks\":null,\"offer_monthly_price\":null,\"discount_percent\":null,\"offer\":null,\"pricing_summary\":\"£318.93/month\",\"units_available\":6}"
+      "raw": "{\"size_sqft\":150,\"monthly_price\":318.93,\"intro_price\":null,\"intro_weeks\":null,\"offer_monthly_price\":null,\"discount_percent\":null,\"offer\":null,\"pricing_summary\":\"£318.93/month\",\"units_available\":5}"
     },
     {
       "competitor": "Big Top (own)",

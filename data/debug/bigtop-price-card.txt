@@ -53,7 +53,7 @@
       "discount_percent": null,
       "offer": null,
       "pricing_summary": "£318.93/month",
-      "units_available": 6
+      "units_available": 5
     },
     {
       "size_sqft": 175,
@@ -89,5 +89,5 @@
       "units_available": 1
     }
   ],
-  "generated_at": "2026-11-11T05:48:50.509Z"
+  "generated_at": "2026-11-12T05:48:22.853Z"
 }
