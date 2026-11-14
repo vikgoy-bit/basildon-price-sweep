@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-13",
+  "date": "2026-11-14",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -72,6 +72,18 @@
       "promo": "£1 first month; special rate ends 20/11/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "55 sq ft id=2747"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 65,
+      "rack_rate": 44.31,
+      "offer_rate": 22.15,
+      "welcome_rate": 1,
+      "per": "week",
+      "promo": "£1 first month; special rate ends 20/11/2026",
+      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
+      "raw": "65 sq ft id=2232"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -511,7 +523,7 @@
     }
   ],
   "warnings": [
-    "Shurgard: API returned 11 units (full ladder).",
+    "Shurgard: API returned 12 units (full ladder).",
     "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
     "storageking: ON HOLD (testing) — not run this sweep."
   ]
