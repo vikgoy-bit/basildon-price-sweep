@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-16",
+  "date": "2026-11-17",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -295,39 +295,39 @@
       "metric": "quote_after_test_form",
       "size_sqft": 16,
       "rack_rate": 21.98,
-      "offer_rate": 14.98,
-      "intro_rate": 7.49,
+      "offer_rate": 17.98,
+      "intro_rate": 8.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£7.49/wk) for first 12 weeks",
+      "promo": "50% off (£8.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=7.49 ongoing_std=21.98 ongoing_web=14.98"
+      "raw": "intro=8.99 ongoing_std=21.98 ongoing_web=17.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 25,
       "rack_rate": 35.98,
-      "offer_rate": 24.98,
-      "intro_rate": 12.49,
+      "offer_rate": 15.95,
+      "intro_rate": 7.98,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£12.49/wk) for first 12 weeks",
+      "promo": "50% off (£7.98/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=12.49 ongoing_std=35.98 ongoing_web=24.98"
+      "raw": "intro=7.98 ongoing_std=35.98 ongoing_web=15.95"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 35,
       "rack_rate": 40.98,
-      "offer_rate": 32.98,
-      "intro_rate": 16.49,
+      "offer_rate": 36.98,
+      "intro_rate": 18.49,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£16.49/wk) for first 12 weeks",
+      "promo": "50% off (£18.49/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=16.49 ongoing_std=40.98 ongoing_web=32.98"
+      "raw": "intro=18.49 ongoing_std=40.98 ongoing_web=36.98"
     },
     {
       "competitor": "Make Space (Billericay)",
@@ -347,52 +347,52 @@
       "metric": "quote_after_test_form",
       "size_sqft": 75,
       "rack_rate": 67.98,
-      "offer_rate": 44.98,
-      "intro_rate": 22.49,
+      "offer_rate": 33.98,
+      "intro_rate": 16.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£22.49/wk) for first 12 weeks",
+      "promo": "50% off (£16.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=22.49 ongoing_std=67.98 ongoing_web=44.98"
+      "raw": "intro=16.99 ongoing_std=67.98 ongoing_web=33.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 100,
       "rack_rate": 84.98,
-      "offer_rate": 84.98,
-      "intro_rate": 42.49,
+      "offer_rate": 67.98,
+      "intro_rate": 33.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£42.49/wk) for first 12 weeks",
+      "promo": "50% off (£33.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=42.49 ongoing_std=84.98 ongoing_web="
+      "raw": "intro=33.99 ongoing_std=84.98 ongoing_web=67.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 125,
       "rack_rate": 106.98,
-      "offer_rate": 70.98,
-      "intro_rate": 35.49,
+      "offer_rate": 53.98,
+      "intro_rate": 26.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£35.49/wk) for first 12 weeks",
+      "promo": "50% off (£26.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=35.49 ongoing_std=106.98 ongoing_web=70.98"
+      "raw": "intro=26.99 ongoing_std=106.98 ongoing_web=53.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 150,
       "rack_rate": 104.98,
-      "offer_rate": 104.98,
-      "intro_rate": 52.49,
+      "offer_rate": 83.98,
+      "intro_rate": 41.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£52.49/wk) for first 12 weeks",
+      "promo": "50% off (£41.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=52.49 ongoing_std=104.98 ongoing_web="
+      "raw": "intro=41.99 ongoing_std=104.98 ongoing_web=83.98"
     },
     {
       "competitor": "Make Space (Billericay)",
@@ -425,13 +425,13 @@
       "metric": "quote_after_test_form",
       "size_sqft": 250,
       "rack_rate": 165.98,
-      "offer_rate": 148.98,
-      "intro_rate": 74.49,
+      "offer_rate": 132.98,
+      "intro_rate": 66.49,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£74.49/wk) for first 12 weeks",
+      "promo": "50% off (£66.49/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=74.49 ongoing_std=165.98 ongoing_web=148.98"
+      "raw": "intro=66.49 ongoing_std=165.98 ongoing_web=132.98"
     },
     {
       "competitor": "Big Top (own)",
@@ -453,7 +453,7 @@
       "per": "week",
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":35,\"monthly_price\":139.1,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":69.55,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)\",\"units_available\":3}"
+      "raw": "{\"size_sqft\":35,\"monthly_price\":139.1,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":69.55,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)\",\"units_available\":2}"
     },
     {
       "competitor": "Big Top (own)",
