@@ -26,7 +26,7 @@ true
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
 0126 891 9015
-Office: closed now
+Office: closed now, open at 9.00
 Access: closed now, open at 7.00
  
 All
@@ -110,8 +110,6 @@ Access hours
 When you can enter your unit
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sun
-7.00-21.00
 Mon
 7.00-21.00
 Tue
@@ -123,13 +121,13 @@ Thu
 Fri
 7.00-21.00
 Sat
+7.00-21.00
+Sun
 7.00-21.00
 Office hours
 For in-person assistance
 St Hilary Retail Park, Miles Gray Road
 Basildon SS14 3UL
-Sun
-Closed
 Mon
 9.00-17.30
 Tue
@@ -141,12 +139,12 @@ Thu
 Fri
 9.00-17.30
 Sat
+Closed
+Sun
 Closed
 Phone hours
 For phone assistance
 0126 891 9015
-Sun
-9.00-18.00
 Mon
 8.00-20.00
 Tue
@@ -158,6 +156,8 @@ Thu
 Fri
 8.00-20.00
 Sat
+9.00-18.00
+Sun
 9.00-18.00
 Self storage units in Basildon
 
@@ -239,7 +239,7 @@ true
  
 true
 4.9/5 - 274 reviews
-jane powell
+Neil Blackburn
 Shurgard Basildon
 true
  
@@ -250,8 +250,8 @@ true
 true
  
 true
-“We have used this storage space since February, we always find it easily accessible, clean, and I would recommend this company”
-Ben Andrews
+“Sarah was extremely helpful from start to finish from the moment we arrived we was shown around and not pressured and we went away and felt it was the right place for us. Plenty of trolleys and always someone on hand if ever needed. Definitely recommend 5*.”
+Sharon Ajose
 Shurgard Basildon
 true
  
@@ -262,8 +262,8 @@ true
 true
  
 true
-“Pleasure to meet the staff at Shurgard, what a double act - Robbie was a pleasure to deal with on the phone, then sorting me out with my unit, Sarah bringing the balance with calm, quiet help and advice - top service thanks!”
-Keith Phipps
+“Really easy to book online, really friendly staff , Sarah walked me through the whole process and answered all of my questions !”
+Steve Landers
 Shurgard Basildon
 true
  
@@ -274,7 +274,7 @@ true
 true
  
 true
-“Sarah was amazing helping us find the right unit, very helpful and professional. Credit to the company. Thanks sarah”
+“Sarah was amazing, very helpful and understanding. You need more people like her, very professional and polite.”
 Read all reviews for Shurgard
 Other storage units near me
 Romford

@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-22",
+  "date": "2026-11-23",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -432,17 +432,6 @@
       "promo": "50% off (£66.49/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
       "raw": "intro=66.49 ongoing_std=165.98 ongoing_web=132.98"
-    },
-    {
-      "competitor": "Big Top (own)",
-      "metric": "unit",
-      "size_sqft": 25,
-      "rack_rate": 17,
-      "offer_rate": 8.5,
-      "per": "week",
-      "promo": "Up to 50% off after 6 weeks for £1",
-      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":25,\"monthly_price\":73.67,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":36.84,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £36.84/month (50% off the standard £73.67/month)\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
