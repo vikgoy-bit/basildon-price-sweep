@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-23",
+  "date": "2026-11-24",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -144,6 +144,18 @@
       "promo": "£1 first month; special rate ends 26/11/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "180 sq ft id=2749"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 200,
+      "rack_rate": 83.54,
+      "offer_rate": 62.77,
+      "welcome_rate": 1,
+      "per": "week",
+      "promo": "£1 first month; special rate ends 26/11/2026",
+      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
+      "raw": "200 sq ft id=2184"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -442,7 +454,7 @@
       "per": "week",
       "promo": "Up to 50% off after 6 weeks for £1",
       "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":35,\"monthly_price\":139.1,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":69.55,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)\",\"units_available\":2}"
+      "raw": "{\"size_sqft\":35,\"monthly_price\":139.1,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":69.55,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)\",\"units_available\":1}"
     },
     {
       "competitor": "Big Top (own)",
@@ -523,7 +535,7 @@
     }
   ],
   "warnings": [
-    "Shurgard: API returned 12 units (full ladder).",
+    "Shurgard: API returned 13 units (full ladder).",
     "Make Space 20 sq ft: TimeoutError: locator.click: Timeout 2000ms exceeded.",
     "storageking: ON HOLD (testing) — not run this sweep."
   ]
