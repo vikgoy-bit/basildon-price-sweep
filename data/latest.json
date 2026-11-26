@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-25",
+  "date": "2026-11-26",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -9,7 +9,7 @@
       "offer_rate": 8.54,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "25 sq ft id=2244"
     },
@@ -18,10 +18,10 @@
       "metric": "unit",
       "size_sqft": 50,
       "rack_rate": 38.31,
-      "offer_rate": 28.85,
+      "offer_rate": 19.15,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "50 sq ft id=2188"
     },
@@ -33,7 +33,7 @@
       "offer_rate": 16.15,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "35 sq ft id=2241"
     },
@@ -45,7 +45,7 @@
       "offer_rate": 8.08,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "Locker 20 sq ft id=3079"
     },
@@ -57,7 +57,7 @@
       "offer_rate": 8.31,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "20 sq ft id=2236"
     },
@@ -69,19 +69,31 @@
       "offer_rate": 14.77,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "30 sq ft id=2231"
     },
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
-      "size_sqft": 75,
-      "rack_rate": 47.31,
-      "offer_rate": 23.77,
+      "size_sqft": 55,
+      "rack_rate": 40.62,
+      "offer_rate": 20.54,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
+      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
+      "raw": "55 sq ft id=2747"
+    },
+    {
+      "competitor": "Shurgard Basildon",
+      "metric": "unit",
+      "size_sqft": 75,
+      "rack_rate": 49.85,
+      "offer_rate": 24.92,
+      "welcome_rate": 1,
+      "per": "week",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "75 sq ft id=2196"
     },
@@ -89,11 +101,11 @@
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 100,
-      "rack_rate": 58.38,
-      "offer_rate": 29.31,
+      "rack_rate": 60,
+      "offer_rate": 30.23,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "100 sq ft id=2185"
     },
@@ -101,35 +113,23 @@
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 130,
-      "rack_rate": 60.92,
-      "offer_rate": 30.46,
-      "welcome_rate": 15.230769230769246,
+      "rack_rate": 66.23,
+      "offer_rate": 33.23,
+      "welcome_rate": 16.61538461538463,
       "per": "week",
-      "promo": "50% off first month; special rate ends 26/11/2026",
+      "promo": "50% off first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "130 sq ft id=2220"
     },
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
-      "size_sqft": 55,
-      "rack_rate": 40.62,
-      "offer_rate": 30.69,
-      "welcome_rate": 1,
-      "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
-      "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
-      "raw": "55 sq ft id=2747"
-    },
-    {
-      "competitor": "Shurgard Basildon",
-      "metric": "unit",
       "size_sqft": 150,
-      "rack_rate": 72.23,
-      "offer_rate": 54.23,
+      "rack_rate": 70.15,
+      "offer_rate": 52.62,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "150 sq ft id=2750"
     },
@@ -137,11 +137,11 @@
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 180,
-      "rack_rate": 76.38,
-      "offer_rate": 57.23,
+      "rack_rate": 78.69,
+      "offer_rate": 59.08,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "180 sq ft id=2749"
     },
@@ -149,11 +149,11 @@
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 200,
-      "rack_rate": 83.54,
-      "offer_rate": 62.77,
+      "rack_rate": 86.08,
+      "offer_rate": 64.85,
       "welcome_rate": 1,
       "per": "week",
-      "promo": "£1 first month; special rate ends 26/11/2026",
+      "promo": "£1 first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "200 sq ft id=2184"
     },
@@ -188,18 +188,18 @@
       "per": "week",
       "promo": "50 sq ft £1 FIRST MONTH'S RENT £38",
       "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £28.85/week Special Price Most popular"
+      "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £19.15/week Special Price Most popular"
     },
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": 50,
       "rack_rate": null,
-      "offer_rate": 28.85,
+      "offer_rate": 19.15,
       "per": "week",
       "promo": "50 sq ft £1 FIRST MONTH'S RENT £38",
       "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £28.85/week Special Price Most popular"
+      "raw": "50 sq ft £1 FIRST MONTH'S RENT £38.31/week £19.15/week Special Price Most popular"
     },
     {
       "competitor": "Shurgard Basildon",
@@ -272,22 +272,22 @@
       "metric": "unit",
       "size_sqft": null,
       "rack_rate": null,
-      "offer_rate": 11.77,
+      "offer_rate": 7.85,
       "per": "week",
       "promo": "",
       "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "Storage units from £11.77 / week"
+      "raw": "Storage units from £7.85 / week"
     },
     {
       "competitor": "Shurgard Basildon",
       "metric": "unit",
       "size_sqft": null,
       "rack_rate": null,
-      "offer_rate": 7.15,
+      "offer_rate": 7.85,
       "per": "week",
       "promo": "",
       "source": "https://www.shurgard.com/en-gb/self-storage-uk/essex/basildon",
-      "raw": "Storage units from £7.15 / week"
+      "raw": "Storage units from £7.85 / week"
     },
     {
       "competitor": "Make Space (Billericay)",
@@ -333,13 +333,13 @@
       "metric": "quote_after_test_form",
       "size_sqft": 35,
       "rack_rate": 40.98,
-      "offer_rate": 36.98,
-      "intro_rate": 18.49,
+      "offer_rate": 32.98,
+      "intro_rate": 16.49,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£18.49/wk) for first 12 weeks",
+      "promo": "50% off (£16.49/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=18.49 ongoing_std=40.98 ongoing_web=36.98"
+      "raw": "intro=16.49 ongoing_std=40.98 ongoing_web=32.98"
     },
     {
       "competitor": "Make Space (Billericay)",
@@ -359,52 +359,52 @@
       "metric": "quote_after_test_form",
       "size_sqft": 75,
       "rack_rate": 67.98,
-      "offer_rate": 33.98,
-      "intro_rate": 16.99,
+      "offer_rate": 57.98,
+      "intro_rate": 28.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£16.99/wk) for first 12 weeks",
+      "promo": "50% off (£28.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=16.99 ongoing_std=67.98 ongoing_web=33.98"
+      "raw": "intro=28.99 ongoing_std=67.98 ongoing_web=57.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 100,
       "rack_rate": 84.98,
-      "offer_rate": 67.98,
-      "intro_rate": 33.99,
+      "offer_rate": 75.98,
+      "intro_rate": 37.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£33.99/wk) for first 12 weeks",
+      "promo": "50% off (£37.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=33.99 ongoing_std=84.98 ongoing_web=67.98"
+      "raw": "intro=37.99 ongoing_std=84.98 ongoing_web=75.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 125,
       "rack_rate": 106.98,
-      "offer_rate": 53.98,
-      "intro_rate": 26.99,
+      "offer_rate": 70.98,
+      "intro_rate": 35.49,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£26.99/wk) for first 12 weeks",
+      "promo": "50% off (£35.49/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=26.99 ongoing_std=106.98 ongoing_web=53.98"
+      "raw": "intro=35.49 ongoing_std=106.98 ongoing_web=70.98"
     },
     {
       "competitor": "Make Space (Billericay)",
       "metric": "quote_after_test_form",
       "size_sqft": 150,
       "rack_rate": 104.98,
-      "offer_rate": 83.98,
-      "intro_rate": 41.99,
+      "offer_rate": 93.98,
+      "intro_rate": 46.99,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£41.99/wk) for first 12 weeks",
+      "promo": "50% off (£46.99/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=41.99 ongoing_std=104.98 ongoing_web=83.98"
+      "raw": "intro=46.99 ongoing_std=104.98 ongoing_web=93.98"
     },
     {
       "competitor": "Make Space (Billericay)",
@@ -437,24 +437,13 @@
       "metric": "quote_after_test_form",
       "size_sqft": 250,
       "rack_rate": 165.98,
-      "offer_rate": 132.98,
-      "intro_rate": 66.49,
+      "offer_rate": 114.98,
+      "intro_rate": 57.49,
       "intro_weeks": 12,
       "per": "week",
-      "promo": "50% off (£66.49/wk) for first 12 weeks",
+      "promo": "50% off (£57.49/wk) for first 12 weeks",
       "source": "https://www.makespaceselfstorage.co.uk/get-a-household-quote/?step=3",
-      "raw": "intro=66.49 ongoing_std=165.98 ongoing_web=132.98"
-    },
-    {
-      "competitor": "Big Top (own)",
-      "metric": "unit",
-      "size_sqft": 35,
-      "rack_rate": 32.1,
-      "offer_rate": 16.05,
-      "per": "week",
-      "promo": "Up to 50% off after 6 weeks for £1",
-      "source": "https://bigtopselfstorage.com/api/public/rex/pricing",
-      "raw": "{\"size_sqft\":35,\"monthly_price\":139.1,\"intro_price\":1,\"intro_weeks\":6,\"offer_monthly_price\":69.55,\"discount_percent\":50,\"offer\":\"Up to 50% off after 6 weeks for £1\",\"pricing_summary\":\"First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)\",\"units_available\":1}"
+      "raw": "intro=57.49 ongoing_std=165.98 ongoing_web=114.98"
     },
     {
       "competitor": "Big Top (own)",

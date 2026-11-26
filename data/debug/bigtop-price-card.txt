@@ -1,17 +1,6 @@
 {
   "sizes": [
     {
-      "size_sqft": 35,
-      "monthly_price": 139.1,
-      "intro_price": 1,
-      "intro_weeks": 6,
-      "offer_monthly_price": 69.55,
-      "discount_percent": 50,
-      "offer": "Up to 50% off after 6 weeks for £1",
-      "pricing_summary": "First 6 weeks £1, then £69.55/month (50% off the standard £139.10/month)",
-      "units_available": 1
-    },
-    {
       "size_sqft": 50,
       "monthly_price": 165.75,
       "intro_price": 1,
@@ -89,5 +78,5 @@
       "units_available": 1
     }
   ],
-  "generated_at": "2026-11-25T05:48:31.919Z"
+  "generated_at": "2026-11-26T05:48:54.350Z"
 }
