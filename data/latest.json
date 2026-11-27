@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-26",
+  "date": "2026-11-27",
   "observations": [
     {
       "competitor": "Shurgard Basildon",
@@ -127,9 +127,9 @@
       "size_sqft": 150,
       "rack_rate": 70.15,
       "offer_rate": 52.62,
-      "welcome_rate": 1,
+      "welcome_rate": 26.307692307692335,
       "per": "week",
-      "promo": "£1 first month; special rate ends 03/12/2026",
+      "promo": "50% off first month; special rate ends 03/12/2026",
       "source": "https://www.shurgard.com/en-gb/api/stores/73/units",
       "raw": "150 sq ft id=2750"
     },
