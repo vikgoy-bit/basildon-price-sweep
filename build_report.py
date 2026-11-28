@@ -507,6 +507,82 @@ def build_recommendations(grid):
     return raise_ops, at_risk
 
 
+def _clean_comp_name(comp):
+    return comp.replace(' Basildon', '').replace(' (Billericay)', '').replace(' (own)', '')
+
+
+def build_cheaper_than_us(grid):
+    """Per Vikas's request (2026-11-28): a complete, un-gated listing of
+    every rival currently cheaper than Big Top, by size. Complementary to
+    build_recommendations() above, not a replacement -- that function only
+    surfaces the SINGLE cheapest rival per size, and only where the gap
+    clears a threshold (meant for actionable pricing suggestions). This
+    lists EVERY rival undercutting Big Top at every size, no threshold --
+    a complete competitive-visibility view, not a filtered action list.
+
+    Same STANDARD (post-promo) rate basis as build_recommendations, for
+    the same reason documented there: a headline "Discounted" teaser price
+    (e.g. Safestore's "£1 for the first month") isn't a meaningful ongoing
+    comparison point. Same 14-day staleness guard, so a rival's dropped/
+    stale listing can't make them look cheaper than they currently are.
+    """
+    STALE_DAYS = 14
+    by_size = {}
+    for size in sorted(grid.keys()):
+        entries = grid[size]
+        bt_entry = entries.get('Big Top (own)')
+        if bt_entry is None:
+            continue
+        bt_offer, bt_rack, _, _ = bt_entry
+        bt_standard = bt_rack if bt_rack is not None else bt_offer
+
+        cheaper = []
+        for comp, (offer, rack, _, last_seen) in entries.items():
+            if comp == 'Big Top (own)':
+                continue
+            if last_seen:
+                try:
+                    days_old = (datetime.strptime(TODAY, '%Y-%m-%d').date()
+                                - datetime.strptime(last_seen, '%Y-%m-%d').date()).days
+                    if days_old >= STALE_DAYS:
+                        continue
+                except ValueError:
+                    pass
+            standard = rack if rack is not None else offer
+            if standard is not None and standard < bt_standard:
+                cheaper.append((comp, standard))
+        if cheaper:
+            cheaper.sort(key=lambda t: t[1])
+            by_size[int(size)] = (bt_standard, cheaper)
+    return by_size
+
+
+def render_cheaper_than_us_html(by_size):
+    if not by_size:
+        return ('<h3 style="margin:14px 0 4px;font-size:14px;">Who\'s Cheaper Than Us</h3>'
+                '<p style="margin:3px 0;font-size:12px;color:#555;">No rival currently beats '
+                'Big Top\'s standard rate on any size with data.</p>')
+
+    parts = ['<h3 style="margin:14px 0 4px;font-size:14px;">Who\'s Cheaper Than Us</h3>']
+    parts.append('<p style="margin:2px 0 8px;font-size:12px;color:#555;">Every rival currently '
+                  'below Big Top\'s STANDARD (post-promo) rate, by size -- complete view, no '
+                  'threshold (unlike Recommended Changes below, which only flags the single '
+                  'cheapest rival where the gap is large enough to act on).</p>')
+    parts.append('<ul style="margin:0 0 8px;padding-left:20px;font-size:12px;">')
+    for size in sorted(by_size.keys()):
+        bt_standard, cheaper = by_size[size]
+        rivals_text = ', '.join(
+            '%s (£%.2f/wk)' % (escape(_clean_comp_name(comp)), rate) for comp, rate in cheaper
+        )
+        parts.append(
+            '<li style="margin:2px 0;">%d sq ft (us: £%.2f/wk): %s</li>' % (
+                size, bt_standard, rivals_text
+            )
+        )
+    parts.append('</ul>')
+    return ''.join(parts)
+
+
 def render_recommendations_html(raise_ops, at_risk):
     if not raise_ops and not at_risk:
         return ('<h3 style="margin:14px 0 4px;font-size:14px;">Recommended Changes</h3>'
@@ -627,7 +703,7 @@ def render_freshness_html(freshness):
     return ''.join(parts)
 
 
-def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_html='', freshness_html=''):
+def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_html='', freshness_html='', cheaper_than_us_html=''):
     grid1yr = grid1yr or {}
     sizes = sorted(set(grid.keys()) | set(grid1yr.keys()))
     # Staleness cutoff for individual grid cells (added 2026-10-10): a size
@@ -739,6 +815,7 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_ht
 <table style="border-collapse:collapse;margin:10px 0;font-size:12px;">{h1}{h2}{rows}</table>
 <h3 style="margin:14px 0 4px;font-size:14px;">Comments</h3>
 {notes_html}
+{cheaper_than_us_html}
 {recommendations_html}
 <p style="margin:16px 0 4px;font-size:12px;"><a href="https://docs.google.com/spreadsheets/d/1AwB-DVQTnLPTvUBS0_Cue5D_o8igN66pJ3HmXNl4tAY/edit?gid=0#gid=0" style="color:#1155CC;">Log of price changes here</a></p>
 </body></html>"""
@@ -800,14 +877,17 @@ def main():
     grid1 = load_1yr()
     raise_ops, at_risk = build_recommendations(grid)
     recommendations_html = render_recommendations_html(raise_ops, at_risk)
+    cheaper_by_size = build_cheaper_than_us(grid)
+    cheaper_than_us_html = render_cheaper_than_us_html(cheaper_by_size)
     freshness = freshness_status()
     freshness_html = render_freshness_html(freshness)
-    html = build_email(grid, summary, footnotes, grid1, recommendations_html, freshness_html)
+    html = build_email(grid, summary, footnotes, grid1, recommendations_html, freshness_html, cheaper_than_us_html)
     open(os.path.join(OUTDIR, 'email.html'), 'w').write(html)
     open(os.path.join(OUTDIR, 'subject.txt'), 'w').write(f'Basildon competitor prices — {TODAY}')
     stale = [f['name'] for f in freshness if not f['is_fresh']]
     print(f'{msg}; {msg_ss}; {msg_sk}; {len(changes)} changes; grid sizes={len(grid)}; '
           f'1yr sizes={len(grid1)}; recommendations: {len(raise_ops)} raise, {len(at_risk)} at-risk; '
+          f'cheaper-than-us sizes: {len(cheaper_by_size)}; '
           f'stale today: {stale if stale else "none"}')
 
 
