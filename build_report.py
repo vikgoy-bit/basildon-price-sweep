@@ -693,17 +693,35 @@ def build_email(grid, summary_lines, footnotes, grid1yr=None, recommendations_ht
                 # being below Big Top's current rate isn't a trustworthy
                 # competitive signal, it may no longer even be offered.
                 hot_style = 'color:#999;font-style:italic;'
-            if rack is None or abs(rack - price) < 0.01:
-                # single price (rate card / no separate standard): show under Standard
-                cells = dash + '<td style="%s%s">£%.2f</td>' % (base, hot_style or 'font-weight:bold;', price)
-            else:
-                cells = ('<td style="%s%s">£%.2f</td>' % (base, hot_style, price)
-                         + '<td style="%s%s">£%.2f</td>' % (base, hot_style, rack))
+            # Compute promo_cols() BEFORE building the price cell (not after,
+            # as before) so its Duration text (t) is available to append
+            # inline onto an extreme-discount Discounted cell below -- added
+            # 2026-11-28 per Vikas's question re: Safestore's "£1 for the
+            # first month" reading like a standing rate at a glance. The
+            # underlying data/semantics were already correct (Discounted =
+            # current intro/selling rate, Standard = rate after the promo
+            # ends -- stated in the table caption, and the Duration column
+            # already carried "£1 for the first month") -- this just makes
+            # a >=80%-off intro price impossible to misread without having
+            # to cross-reference the separate Duration column.
             if is_stale_cell:
                 d, t = promo_cols(comp, promo)
                 t = (t + ' ' if t else '') + f'(last seen {last_seen})'
             else:
                 d, t = promo_cols(comp, promo)
+            is_extreme_discount = (
+                rack is not None and rack > 0 and price < rack
+                and (price / rack) < 0.20
+            )
+            if rack is None or abs(rack - price) < 0.01:
+                # single price (rate card / no separate standard): show under Standard
+                cells = dash + '<td style="%s%s">£%.2f</td>' % (base, hot_style or 'font-weight:bold;', price)
+            else:
+                discounted_label = '£%.2f' % price
+                if is_extreme_discount and t and t != '&mdash;':
+                    discounted_label += ' <span style="font-weight:normal;font-size:10px;">(%s)</span>' % t
+                cells = ('<td style="%s%s">%s</td>' % (base, hot_style, discounted_label)
+                         + '<td style="%s%s">£%.2f</td>' % (base, hot_style, rack))
             cells += '<td style="%sfont-size:11px;color:#444;">%s</td>' % (base, d)
             cells += '<td style="%sfont-size:11px;color:%s;">%s</td>' % (base, '#999' if is_stale_cell else '#444', t)
             if comp == 'Safestore Basildon':
